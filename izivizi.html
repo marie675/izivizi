@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IZI VIZI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F4F4F0;
+  --card: #FAFAFA;
+  --text: #1A1714;
+  --muted: #8C8479;
+  --accent: #2A7A6F;
+  --border: #E0DDD8;
+  --done-text: #B5AEA6;
+  --yellow: #F5C842;
+  --yellow-bg: #FFFAE8;
+  --orange: #E8853A;
+  --orange-bg: #FFF3E8;
+  --turquoise: #2AADA0;
+  --turquoise-bg: #E8F8F6;
+  --next-bg: #F6F5F1;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem 5rem; }
+
+/* NAV TABS */
+.tabs { max-width: 780px; margin: 0 auto 2rem; display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 4px; }
+.tab { flex: 1; text-align: center; padding: 0.5rem; font-size: 13px; font-weight: 500; border-radius: 9px; cursor: pointer; color: var(--muted); border: none; background: none; transition: all 0.2s; }
+.tab.active { background: var(--accent); color: white; }
+.tab:hover:not(.active) { background: var(--bg); }
+
+.page { display: none; max-width: 780px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* HEADER */
+header { margin-bottom: 1.5rem; }
+header h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; }
+.legend { display: flex; gap: 12px; margin-top: 0.75rem; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dot-yellow { background: var(--yellow); }
+.dot-orange { background: var(--orange); }
+.dot-turquoise { background: var(--turquoise); }
+
+/* PROGRESS */
+.progress-wrap { margin-top: 1.25rem; }
+.progress-bar-bg { background: var(--border); border-radius: 99px; height: 6px; overflow: hidden; }
+.progress-bar { height: 6px; background: var(--accent); border-radius: 99px; width: 0%; transition: width 0.5s ease; }
+.progress-meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.4rem; }
+.progress-pct { font-size: 13px; font-weight: 500; color: var(--accent); }
+.progress-time { font-size: 12px; color: var(--muted); }
+
+/* REINFORCE */
+.reinforce-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+.reinforce-main { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); margin-bottom: 0.4rem; }
+.reinforce-detail { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.dot-inline { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+/* TARGET GRID */
+.target-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+.target-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+.target-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.target-day { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.4rem; text-align: center; font-size: 12px; }
+.target-day.today { border-color: var(--accent); background: #EAF5F3; }
+.target-day.past { opacity: 0.45; }
+.target-day-name { font-weight: 500; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+.target-day.today .target-day-name { color: var(--accent); }
+.target-dots { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; min-height: 18px; align-items: center; }
+.tdot { width: 8px; height: 8px; border-radius: 50%; }
+.target-time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.target-day.today .target-time { color: var(--accent); font-weight: 500; }
+.target-empty { font-size: 11px; color: var(--done-text); }
+
+/* STATUS */
+.status { font-size: 13px; padding: 0.6rem 1rem; border-radius: 8px; display: none; margin-bottom: 1rem; }
+.status.visible { display: block; }
+.status.saving { background: #FFF8E7; color: #7A6000; border: 1px solid #F0D88A; }
+.status.saved { background: var(--card); color: var(--accent); border: 1px solid var(--border); }
+.status.error { background: #FEF0EE; color: #9B2C2C; border: 1px solid #FCA5A5; }
+.status.loading { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+
+/* SECTIONS */
+.section { margin-bottom: 2.5rem; }
+.section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+.section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); flex: 1; padding-left: 2px; }
+.section-delete-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 5px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; line-height: 1; }
+.section-header:hover .section-delete-btn { opacity: 1; }
+.section-delete-btn:hover { color: #C45C3A; }
+
+.group { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.75rem; overflow: hidden; }
+.group-header { display: flex; align-items: center; padding: 0.75rem 1rem 0.5rem; border-bottom: 1px solid var(--border); gap: 8px; }
+.group-title { font-size: 13px; font-weight: 500; color: var(--muted); flex: 1; }
+.group-delete-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 5px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; line-height: 1; }
+.group-header:hover .group-delete-btn { opacity: 1; }
+.group-delete-btn:hover { color: #C45C3A; }
+
+/* TASK ITEMS */
+.task-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); transition: background 0.15s; border-left: 3px solid transparent; }
+.task-item:last-of-type { border-bottom: none; }
+.task-item:hover { background: #F5F4F0; }
+.task-item.yellow { border-left-color: var(--yellow); background: var(--yellow-bg); }
+.task-item.orange { border-left-color: var(--orange); background: var(--orange-bg); }
+.task-item.turquoise { border-left-color: var(--turquoise); background: var(--turquoise-bg); }
+.task-item input[type="checkbox"] { appearance: none; width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; background: white; position: relative; }
+.task-item input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+.task-item input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 6px; height: 10px; border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
+.task-text { font-size: 14px; color: var(--text); flex: 1; line-height: 1.4; }
+.task-item input:checked ~ .task-text { color: var(--done-text); text-decoration: line-through; }
+.color-picker { display: flex; gap: 5px; align-items: center; }
+.color-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; flex-shrink: 0; }
+.color-dot:hover { transform: scale(1.2); }
+.color-dot.active { border-color: rgba(0,0,0,0.25); transform: scale(1.15); }
+.color-dot.cd-yellow { background: var(--yellow); }
+.color-dot.cd-orange { background: var(--orange); }
+.color-dot.cd-turquoise { background: var(--turquoise); }
+.delete-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; padding: 2px 4px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; line-height: 1; }
+.task-item:hover .delete-btn { opacity: 1; }
+.delete-btn:hover { color: #C45C3A; }
+
+/* NEXT WEEK TASKS */
+.next-week-group { background: var(--next-bg); border: 1px dashed var(--border); border-radius: 12px; margin-bottom: 0.75rem; overflow: hidden; opacity: 0.7; }
+.next-week-group .group-header { background: var(--next-bg); }
+.next-week-badge { font-size: 10px; background: var(--border); color: var(--muted); padding: 2px 7px; border-radius: 99px; font-weight: 500; }
+.next-task-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); color: var(--muted); border-left: 3px solid var(--border); }
+.next-task-item:last-of-type { border-bottom: none; }
+.next-task-text { font-size: 14px; flex: 1; font-style: italic; }
+.next-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; opacity: 0.5; }
+
+/* ADD ROWS */
+.add-task-row { display: flex; align-items: center; gap: 8px; padding: 0.5rem 1rem 0.6rem; border-top: 1px dashed var(--border); }
+.add-task-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; }
+.add-task-input::placeholder { color: var(--muted); }
+.add-color-picker { display: flex; gap: 4px; align-items: center; }
+.add-color-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; }
+.add-color-dot:hover { transform: scale(1.2); }
+.add-color-dot.selected { border-color: rgba(0,0,0,0.3); transform: scale(1.15); }
+.add-color-dot.cd-yellow { background: var(--yellow); }
+.add-color-dot.cd-orange { background: var(--orange); }
+.add-color-dot.cd-turquoise { background: var(--turquoise); }
+.add-task-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 20px; line-height: 1; padding: 0 2px; transition: transform 0.15s; }
+.add-task-btn:hover { transform: scale(1.2); }
+.add-group-row { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+.add-group-input { flex: 1; border: 1px dashed var(--border); border-radius: 10px; padding: 0.55rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: transparent; outline: none; transition: border-color 0.2s; }
+.add-group-input::placeholder { color: var(--muted); }
+.add-group-input:focus { border-color: var(--accent); }
+.add-group-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 20px; line-height: 1; padding: 0 4px; transition: transform 0.15s; }
+.add-group-btn:hover { transform: scale(1.2); }
+.add-section-wrap { margin-top: 0.5rem; margin-bottom: 1rem; }
+.add-section-row { display: flex; align-items: center; gap: 8px; }
+.add-section-input { flex: 1; border: 1px dashed var(--border); border-radius: 10px; padding: 0.65rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: transparent; outline: none; transition: border-color 0.2s; }
+.add-section-input::placeholder { color: var(--muted); }
+.add-section-input:focus { border-color: var(--accent); }
+.add-section-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 22px; line-height: 1; padding: 0 4px; transition: transform 0.15s; }
+.add-section-btn:hover { transform: scale(1.2); }
+
+/* NEXT WEEK ADD */
+.add-next-task-row { display: flex; align-items: center; gap: 8px; padding: 0.5rem 1rem 0.6rem; border-top: 1px dashed var(--border); }
+.add-next-task-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); outline: none; font-style: italic; }
+.add-next-task-input::placeholder { color: var(--border); }
+
+/* ===== KANBAN CRM ===== */
+.crm-header { margin-bottom: 1.5rem; }
+.crm-header h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; font-weight: 400; }
+.crm-header p { font-size: 13px; color: var(--muted); margin-top: 0.3rem; }
+
+.kanban-board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; align-items: start; }
+
+.kanban-col { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.kanban-col-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.kanban-col-title { font-size: 12px; font-weight: 500; color: var(--muted); flex: 1; }
+.kanban-col-count { font-size: 11px; background: var(--bg); color: var(--muted); padding: 1px 7px; border-radius: 99px; }
+.kanban-col-accent { height: 3px; }
+
+.col-contact .kanban-col-accent { background: #94A3B8; }
+.col-offre .kanban-col-accent { background: var(--yellow); }
+.col-rdv .kanban-col-accent { background: var(--orange); }
+.col-client .kanban-col-accent { background: var(--turquoise); }
+.col-perdu .kanban-col-accent { background: #E0DDD8; }
+
+.kanban-cards { min-height: 80px; padding: 8px; display: flex; flex-direction: column; gap: 6px; transition: background 0.15s; }
+.kanban-cards.drag-over { background: #EAF5F3; border-radius: 0 0 12px 12px; }
+
+.prospect-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.65rem 0.75rem;
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.15s;
+  position: relative;
+}
+.prospect-card:active { cursor: grabbing; }
+.prospect-card.dragging { opacity: 0.4; transform: scale(0.97); }
+.prospect-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.prospect-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.prospect-meta { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.prospect-actions { position: absolute; top: 6px; right: 6px; display: none; gap: 4px; }
+.prospect-card:hover .prospect-actions { display: flex; }
+.prospect-action-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 2px 4px; border-radius: 4px; line-height: 1; }
+.prospect-action-btn:hover { color: var(--accent); background: var(--bg); }
+.prospect-action-del:hover { color: #C45C3A; }
+
+/* Add prospect form */
+.add-prospect-btn {
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  margin: 4px 0 8px;
+}
+.add-prospect-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.prospect-form { background: var(--bg); border-radius: 8px; padding: 0.75rem; margin: 4px 0 8px; display: flex; flex-direction: column; gap: 6px; }
+.prospect-form input, .prospect-form textarea {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  background: white;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.prospect-form input:focus, .prospect-form textarea:focus { border-color: var(--accent); }
+.prospect-form textarea { resize: none; height: 52px; }
+.prospect-form-actions { display: flex; gap: 6px; }
+.btn-save { background: var(--accent); color: white; border: none; border-radius: 6px; padding: 0.35rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1; }
+.btn-cancel { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--muted); cursor: pointer; }
+
+/* Prospect edit modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; z-index: 100; }
+.modal-overlay.visible { display: flex; }
+.modal { background: white; border-radius: 14px; padding: 1.5rem; width: 360px; display: flex; flex-direction: column; gap: 10px; }
+.modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.2rem; font-weight: 400; }
+.modal input, .modal textarea { border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; width: 100%; }
+.modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+.modal textarea { resize: none; height: 80px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 4px; }
+.modal-save { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; flex: 1; }
+.modal-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); cursor: pointer; }
+
+.spinner { display: inline-block; width: 10px; height: 10px; border: 2px solid var(--muted); border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* KPI */
+.kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+.kpi-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem; }
+.kpi-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.kpi-value { font-size: 13px; font-weight: 500; color: var(--accent); }
+.kpi-bar-bg { background: var(--border); border-radius: 99px; height: 6px; overflow: hidden; margin-bottom: 0.5rem; }
+.kpi-bar { height: 6px; border-radius: 99px; width: 0%; transition: width 0.5s ease; }
+.kpi-hint { font-size: 11px; color: var(--muted); }
+.kpi-counter-row { display: flex; align-items: center; gap: 12px; }
+.kpi-count-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; width: 28px; height: 28px; font-size: 16px; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.kpi-count-btn:hover { background: var(--border); }
+.kpi-client-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+.kpi-client-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+.kpi-client-name { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; }
+.kpi-client-del { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 5px; border-radius: 4px; line-height: 1; }
+.kpi-client-card:hover .kpi-client-del { opacity: 1; }
+.kpi-client-del:hover { color: #C45C3A; }
+.kpi-objective { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; }
+.kpi-objective-label { font-size: 13px; color: var(--text); flex: 1; }
+.kpi-objective-controls { display: flex; align-items: center; gap: 6px; }
+.kpi-obj-input { width: 44px; border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 12px; text-align: center; outline: none; background: white; }
+.kpi-obj-input:focus { border-color: var(--accent); }
+.kpi-obj-current { display: flex; align-items: center; gap: 4px; }
+.kpi-add-objective-row { display: flex; align-items: center; gap: 8px; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border); }
+.kpi-add-objective-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; }
+.kpi-add-objective-input::placeholder { color: var(--muted); }
+.kpi-add-client-row { display: flex; align-items: center; gap: 8px; margin-top: 0.5rem; }
+
+
+footer { max-width: 780px; margin: 2rem auto 0; font-size: 11px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+
+<div style="max-width:780px;margin:0 auto 1.5rem;">
+  <h1 style="font-family:'DM Serif Display',serif;font-size:2rem;font-weight:400;">IZI VIZI</h1>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab active" onclick="showPage('todo')">Tâches de la semaine</button>
+  <button class="tab" onclick="showPage('next')">Semaine prochaine</button>
+  <button class="tab" onclick="showPage('crm')">CRM Prospection</button>
+  <button class="tab" onclick="showPage('kpi')">KPI Semaine</button>
+</div>
+
+<!-- ===== TODO PAGE ===== -->
+<div class="page active" id="page-todo">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot dot-yellow"></div> 15 min</div>
+    <div class="legend-item"><div class="legend-dot dot-orange"></div> 30 min - 1h</div>
+    <div class="legend-item"><div class="legend-dot dot-turquoise"></div> 2h</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-meta">
+      <span class="progress-pct" id="progressPct">0%</span>
+      <span class="progress-time" id="progressTime"></span>
+    </div>
+  </div>
+
+  <div style="height:1.25rem"></div>
+  <div class="reinforce-card">
+    <div class="reinforce-main" id="reinforceMain">Bonne semaine Marie !</div>
+    <div class="reinforce-detail" id="reinforceDetail">Aucune tâche complétée pour l'instant — let's go !</div>
+  </div>
+
+  <div class="target-card">
+    <div class="target-title">Objectif pour atteindre vendredi</div>
+    <div class="target-grid" id="targetGrid"></div>
+  </div>
+
+  <div class="status loading visible" id="status"><span class="spinner"></span> Chargement...</div>
+  <div id="todoMain"></div>
+
+  <div class="add-section-wrap">
+    <div class="add-section-row">
+      <input type="text" class="add-section-input" id="newSectionInput" placeholder="+ Nouveau client..." />
+      <button class="add-section-btn" onclick="addSection()">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEXT WEEK PAGE ===== -->
+<div class="page" id="page-next">
+  <div style="margin-bottom:1.5rem;">
+    <div style="font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:400;">Semaine prochaine</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:0.3rem;" id="nextWeekLabel">Les tâches se débloquent automatiquement le lundi matin.</div>
+  </div>
+  <div id="nextMain"></div>
+  <div class="add-section-wrap">
+    <div class="add-section-row">
+      <input type="text" class="add-section-input" id="newNextSectionInput" placeholder="+ Nouveau client pour la semaine prochaine..." />
+      <button class="add-section-btn" onclick="addNextSection()">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CRM PAGE ===== -->
+<div class="page" id="page-crm">
+  <div class="crm-header">
+    <h2>CRM Prospection</h2>
+    <p>Glisse tes prospects d'une étape à l'autre.</p>
+  </div>
+  <div class="kanban-board" id="kanbanBoard"></div>
+</div>
+
+<!-- KPI PAGE -->
+<div class="page" id="page-kpi">
+  <div style="margin-bottom:1.5rem;">
+    <div style="font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:400;">KPI Semaine</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:0.3rem;">Objectifs fixes + objectifs par client pour cette semaine.</div>
+  </div>
+  <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Objectifs fixes</div>
+  <div class="kpi-card">
+    <div class="kpi-top">
+      <div class="kpi-label">Nouveaux prospects contactés</div>
+      <div class="kpi-value"><span id="kpiProspectsVal">0</span> / 3</div>
+    </div>
+    <div class="kpi-bar-bg"><div class="kpi-bar" id="kpiProspectsBar" style="background:var(--turquoise)"></div></div>
+    <div class="kpi-hint">Calculé automatiquement depuis le CRM</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top">
+      <div class="kpi-label">Posts publiés cette semaine</div>
+      <div class="kpi-value"><span id="kpiPostsVal">0</span> / 4</div>
+    </div>
+    <div class="kpi-bar-bg"><div class="kpi-bar" id="kpiPostsBar" style="background:var(--orange)"></div></div>
+    <div class="kpi-counter-row">
+      <button class="kpi-count-btn" onclick="changePostCount(-1)">−</button>
+      <span style="font-size:12px;color:var(--muted);">Mettre à jour manuellement</span>
+      <button class="kpi-count-btn" onclick="changePostCount(1)">+</button>
+    </div>
+  </div>
+  <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 0.75rem;">Objectifs par client</div>
+  <div id="kpiClients"></div>
+  <div class="kpi-add-client-row">
+    <input type="text" class="add-section-input" id="kpiNewClient" placeholder="+ Ajouter un client..." />
+    <button class="add-section-btn" onclick="addKpiClient()">+</button>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Modifier le prospect</h3>
+    <input type="text" id="modalName" placeholder="Nom / Entreprise" />
+    <input type="tel" id="modalPhone" placeholder="Téléphone" />
+    <input type="email" id="modalEmail" placeholder="Email" />
+    <textarea id="modalNotes" placeholder="Notes..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Annuler</button>
+      <button class="modal-save" onclick="saveModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<footer>Synchronisé automatiquement — accessible depuis n'importe quel appareil.</footer>
+
+<script>
+const BIN_ID = '69cd151a36566621a86c449d';
+const API_KEY = '$2a$10$eV5JT8HcfSZGlHJyr0HvTediutQvCQxouF6Hz1WrYcEFK5JlYsuWC';
+const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+const WEIGHTS = { yellow: 1, orange: 4, turquoise: 8 };
+const COLORS = ['yellow', 'orange', 'turquoise'];
+const DAY_NAMES = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'];
+const MIN_MAP = { yellow: 15, orange: 45, turquoise: 120 };
+
+const CRM_COLS = [
+  { id: 'contact', label: 'Premier contact', cls: 'col-contact' },
+  { id: 'offre', label: 'Offre envoyée', cls: 'col-offre' },
+  { id: 'rdv', label: 'RDV / Appel accepté', cls: 'col-rdv' },
+  { id: 'client', label: 'Client', cls: 'col-client' },
+  { id: 'perdu', label: 'Pas client', cls: 'col-perdu' }
+];
+
+const DEFAULT_STORE = {
+  sections: [
+    { section: "Hair Service", groups: [{ title: "Cette semaine", tasks: [
+      { text: "Créer events FB", color: "orange", done: false },
+      { text: "Vidéo Claudine", color: "turquoise", done: false },
+      { text: "Shooting shampooings", color: "turquoise", done: false }
+    ]}]},
+    { section: "Xavier", groups: [{ title: "Cette semaine", tasks: [
+      { text: "Post 1", color: "orange", done: false },
+      { text: "Post 2", color: "orange", done: false },
+      { text: "Post 3", color: "orange", done: false },
+      { text: "Post 4", color: "orange", done: false }
+    ]}]},
+    { section: "Vincent", groups: [{ title: "Cette semaine", tasks: [
+      { text: "Post 1", color: "orange", done: false },
+      { text: "Post 2", color: "orange", done: false }
+    ]}]}
+  ],
+  nextSections: [],
+  crm: { contact: [], offre: [], rdv: [], client: [], perdu: [] },
+  kpi: { posts: 0, clients: [] }
+};
+
+let store = { sections: [], nextSections: [], crm: { contact: [], offre: [], rdv: [], client: [], perdu: [] } };
+let saveTimeout = null;
+let dragCard = null, dragColId = null, dragCardIdx = null;
+let editingProspect = null;
+
+// ===== TABS =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== STATUS =====
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = `status ${type} visible`;
+  el.innerHTML = type === 'saving' ? `<span class="spinner"></span> ${msg}` : msg;
+}
+function hideStatus() { setTimeout(() => document.getElementById('status').classList.remove('visible'), 2000); }
+
+// ===== LOAD / SAVE =====
+async function loadData() {
+  try {
+    const res = await fetch(API_URL + '/latest', { headers: { 'X-Master-Key': API_KEY } });
+    const json = await res.json();
+    const r = json.record;
+    if (r && r.sections && r.sections.length > 0) {
+      store.sections = r.sections;
+      store.nextSections = r.nextSections || [];
+      store.crm = r.crm || { contact: [], offre: [], rdv: [], client: [], perdu: [] };
+      store.kpi = r.kpi || { posts: 0, clients: [] };
+    } else {
+      store = JSON.parse(JSON.stringify(DEFAULT_STORE));
+      await saveData(true);
+    }
+  } catch(e) {
+    store = JSON.parse(JSON.stringify(DEFAULT_STORE));
+    showStatus('error', 'Erreur de chargement — mode hors ligne.');
+  }
+  checkMondayUnlock();
+  renderAll();
+}
+
+async function saveData(silent = false) {
+  if (!silent) showStatus('saving', 'Sauvegarde...');
+  try {
+    await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify({ sections: store.sections, nextSections: store.nextSections, crm: store.crm, kpi: store.kpi })
+    });
+    if (!silent) { showStatus('saved', '✓ Sauvegardé'); hideStatus(); }
+  } catch(e) {
+    if (!silent) showStatus('error', 'Erreur de sauvegarde.'); }
+}
+
+function scheduleSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(() => saveData(), 800); }
+
+// ===== MONDAY UNLOCK =====
+function checkMondayUnlock() {
+  const now = new Date();
+  if (now.getDay() === 1 && store.nextSections && store.nextSections.length > 0) {
+    const lastUnlock = store.lastUnlock || '';
+    const todayStr = now.toISOString().slice(0, 10);
+    if (lastUnlock !== todayStr) {
+      store.nextSections.forEach(ns => {
+        const existing = store.sections.find(s => s.section === ns.section);
+        if (existing) {
+          ns.groups.forEach(g => existing.groups.push(g));
+        } else {
+          store.sections.push(JSON.parse(JSON.stringify(ns)));
+        }
+      });
+      store.nextSections = [];
+      store.lastUnlock = todayStr;
+    }
+  }
+}
+
+// ===== HELPERS =====
+function getAllTasks() {
+  const tasks = [];
+  store.sections.forEach(s => s.groups.forEach(g => g.tasks.forEach(t => tasks.push(t))));
+  return tasks;
+}
+
+function getStats() {
+  const tasks = getAllTasks();
+  let totalWeight = 0, doneWeight = 0;
+  let doneByColor = { yellow: 0, orange: 0, turquoise: 0 };
+  let doneMinutes = 0, totalMinutes = 0;
+  tasks.forEach(t => {
+    const w = WEIGHTS[t.color] || 1;
+    const m = MIN_MAP[t.color] || 15;
+    totalWeight += w; totalMinutes += m;
+    if (t.color) { if (!doneByColor[t.color]) doneByColor[t.color] = 0; }
+    if (t.done) { doneWeight += w; doneMinutes += m; if (t.color) doneByColor[t.color]++; }
+  });
+  return { totalWeight, doneWeight, doneByColor, doneMinutes, totalMinutes };
+}
+
+function formatMinutes(min) {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60), m = min % 60;
+  return m > 0 ? `${h}h${m < 10 ? '0' : ''}${m}` : `${h}h`;
+}
+
+function getTodayIdx() {
+  const d = new Date().getDay();
+  return (d >= 1 && d <= 5) ? d - 1 : -1;
+}
+
+// ===== RENDER ALL =====
+function renderAll() {
+  renderTodo();
+  renderNextWeek();
+  renderKanban();
+  renderKpi();
+  document.getElementById('status').classList.remove('visible');
+}
+
+// ===== STATS / PROGRESS =====
+function updateStats() {
+  const { totalWeight, doneWeight, doneByColor, doneMinutes, totalMinutes } = getStats();
+  const pct = totalWeight === 0 ? 0 : Math.round(doneWeight / totalWeight * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressTime').textContent = `${formatMinutes(doneMinutes)} / ${formatMinutes(totalMinutes)}`;
+
+  const totalDone = (doneByColor.yellow||0) + (doneByColor.orange||0) + (doneByColor.turquoise||0);
+  const msgs = ['Bonne semaine Marie !', 'Bien joué, continue !', 'Super boulot !', 'En route pour vendredi !', 'Presque là !'];
+  document.getElementById('reinforceMain').textContent = totalDone === 0 ? 'Bonne semaine Marie !' : msgs[Math.min(Math.floor(pct / 25), msgs.length - 1)];
+
+  if (totalDone === 0) {
+    document.getElementById('reinforceDetail').textContent = "Aucune tâche complétée pour l'instant — let's go !";
+  } else {
+    let parts = [];
+    if (doneByColor.yellow > 0) parts.push(`<span><span class="dot-inline" style="background:var(--yellow)"></span>${doneByColor.yellow} petite${doneByColor.yellow > 1 ? 's' : ''}</span>`);
+    if (doneByColor.orange > 0) parts.push(`<span><span class="dot-inline" style="background:var(--orange)"></span>${doneByColor.orange} moyenne${doneByColor.orange > 1 ? 's' : ''}</span>`);
+    if (doneByColor.turquoise > 0) parts.push(`<span><span class="dot-inline" style="background:var(--turquoise)"></span>${doneByColor.turquoise} grande${doneByColor.turquoise > 1 ? 's' : ''}</span>`);
+    document.getElementById('reinforceDetail').innerHTML = `${totalDone} tâche${totalDone > 1 ? 's' : ''} complétée${totalDone > 1 ? 's' : ''} aujourd'hui : ${parts.join(', ')}`;
+  }
+
+  // Target grid
+  const todayIdx = getTodayIdx();
+  const pendingTasks = getAllTasks().filter(t => !t.done);
+  const daysLeft = todayIdx >= 0 ? 5 - todayIdx : 5;
+  const grid = document.getElementById('targetGrid');
+  grid.innerHTML = '';
+
+  DAY_NAMES.forEach((name, i) => {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'target-day' + (i === todayIdx ? ' today' : '') + (i < todayIdx ? ' past' : '');
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'target-day-name';
+    nameEl.textContent = name;
+    dayEl.appendChild(nameEl);
+
+    const dotsEl = document.createElement('div');
+    dotsEl.className = 'target-dots';
+
+    let dayTimeMin = 0;
+
+    if (i < todayIdx) {
+      const empty = document.createElement('span');
+      empty.className = 'target-empty';
+      empty.textContent = '-';
+      dotsEl.appendChild(empty);
+    } else if (pendingTasks.length === 0) {
+      const empty = document.createElement('span');
+      empty.className = 'target-empty';
+      empty.textContent = pct >= 100 ? '✓' : '-';
+      dotsEl.appendChild(empty);
+    } else {
+      const perDay = Math.ceil(pendingTasks.length / daysLeft);
+      const start = (i - Math.max(todayIdx, 0)) * perDay;
+      const dayTasks = pendingTasks.slice(start, start + perDay);
+      if (dayTasks.length === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'target-empty';
+        empty.textContent = '-';
+        dotsEl.appendChild(empty);
+      } else {
+        dayTasks.forEach(t => {
+          const dot = document.createElement('div');
+          dot.className = 'tdot';
+          dot.style.background = t.color === 'yellow' ? 'var(--yellow)' : t.color === 'orange' ? 'var(--orange)' : 'var(--turquoise)';
+          dot.title = t.text;
+          dotsEl.appendChild(dot);
+          dayTimeMin += MIN_MAP[t.color] || 15;
+        });
+      }
+    }
+
+    dayEl.appendChild(dotsEl);
+
+    if (i >= Math.max(todayIdx, 0) && dayTimeMin > 0) {
+      const timeEl = document.createElement('div');
+      timeEl.className = 'target-time';
+      timeEl.textContent = formatMinutes(dayTimeMin);
+      dayEl.appendChild(timeEl);
+    }
+
+    grid.appendChild(dayEl);
+  });
+}
+
+// ===== RENDER TODO =====
+function renderTodo() {
+  const main = document.getElementById('todoMain');
+  main.innerHTML = '';
+
+  store.sections.forEach((section, si) => {
+    const secEl = document.createElement('div');
+    secEl.className = 'section';
+    const secHeader = document.createElement('div');
+    secHeader.className = 'section-header';
+    const secLabel = document.createElement('div');
+    secLabel.className = 'section-label';
+    secLabel.textContent = section.section;
+    const secDel = document.createElement('button');
+    secDel.className = 'section-delete-btn';
+    secDel.textContent = '×';
+    secDel.onclick = () => { if (confirm(`Supprimer "${section.section}" ?`)) { store.sections.splice(si, 1); renderTodo(); updateStats(); scheduleSave(); } };
+    secHeader.appendChild(secLabel);
+    secHeader.appendChild(secDel);
+    secEl.appendChild(secHeader);
+
+    section.groups.forEach((group, gi) => {
+      const groupEl = buildGroup(group, si, gi);
+      secEl.appendChild(groupEl);
+    });
+
+    const addGroupRow = buildAddGroupRow(si);
+    secEl.appendChild(addGroupRow);
+    main.appendChild(secEl);
+  });
+
+  updateStats();
+}
+
+function buildGroup(group, si, gi) {
+  const groupEl = document.createElement('div');
+  groupEl.className = 'group';
+  const groupHeader = document.createElement('div');
+  groupHeader.className = 'group-header';
+  const groupTitle = document.createElement('div');
+  groupTitle.className = 'group-title';
+  groupTitle.textContent = group.title;
+  const groupDel = document.createElement('button');
+  groupDel.className = 'group-delete-btn';
+  groupDel.textContent = '×';
+  groupDel.onclick = () => { if (confirm(`Supprimer "${group.title}" ?`)) { store.sections[si].groups.splice(gi, 1); renderTodo(); updateStats(); scheduleSave(); } };
+  groupHeader.appendChild(groupTitle);
+  groupHeader.appendChild(groupDel);
+  groupEl.appendChild(groupHeader);
+  group.tasks.forEach((task, ti) => groupEl.appendChild(makeTaskRow(task, si, gi, ti)));
+  groupEl.appendChild(buildAddTaskRow(si, gi));
+  return groupEl;
+}
+
+function buildAddTaskRow(si, gi) {
+  const addRow = document.createElement('div');
+  addRow.className = 'add-task-row';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'add-task-input'; inp.placeholder = 'Ajouter une tâche...';
+  let sel = 'orange';
+  const picker = document.createElement('div');
+  picker.className = 'add-color-picker';
+  COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = `add-color-dot cd-${c}${c === sel ? ' selected' : ''}`;
+    dot.onclick = () => { sel = c; picker.querySelectorAll('.add-color-dot').forEach(d => d.classList.remove('selected')); dot.classList.add('selected'); };
+    picker.appendChild(dot);
+  });
+  const btn = document.createElement('button');
+  btn.className = 'add-task-btn'; btn.textContent = '+';
+  const doAdd = () => { if (inp.value.trim()) { store.sections[si].groups[gi].tasks.push({ text: inp.value.trim(), color: sel, done: false }); inp.value = ''; renderTodo(); scheduleSave(); } else inp.focus(); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  btn.onclick = doAdd;
+  addRow.appendChild(inp); addRow.appendChild(picker); addRow.appendChild(btn);
+  return addRow;
+}
+
+function buildAddGroupRow(si) {
+  const row = document.createElement('div');
+  row.className = 'add-group-row';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'add-group-input'; inp.placeholder = '+ Nouveau groupe...';
+  const btn = document.createElement('button');
+  btn.className = 'add-group-btn'; btn.textContent = '+';
+  const doAdd = () => { if (inp.value.trim()) { store.sections[si].groups.push({ title: inp.value.trim(), tasks: [] }); inp.value = ''; renderTodo(); scheduleSave(); } else inp.focus(); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  btn.onclick = doAdd;
+  row.appendChild(inp); row.appendChild(btn);
+  return row;
+}
+
+function makeTaskRow(task, si, gi, ti) {
+  const row = document.createElement('div');
+  row.className = `task-item ${task.color || ''}`;
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = task.done;
+  cb.addEventListener('change', () => { store.sections[si].groups[gi].tasks[ti].done = cb.checked; updateStats(); scheduleSave(); });
+  const label = document.createElement('span');
+  label.className = 'task-text'; label.textContent = task.text;
+  const picker = document.createElement('div');
+  picker.className = 'color-picker';
+  COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = `color-dot cd-${c}${(task.color||'') === c ? ' active' : ''}`;
+    dot.onclick = () => { store.sections[si].groups[gi].tasks[ti].color = c; scheduleSave(); renderTodo(); };
+    picker.appendChild(dot);
+  });
+  const del = document.createElement('button');
+  del.className = 'delete-btn'; del.textContent = '×';
+  del.onclick = () => { store.sections[si].groups[gi].tasks.splice(ti, 1); renderTodo(); updateStats(); scheduleSave(); };
+  row.appendChild(cb); row.appendChild(label); row.appendChild(picker); row.appendChild(del);
+  return row;
+}
+
+function addSection() {
+  const inp = document.getElementById('newSectionInput');
+  if (!inp.value.trim()) { inp.focus(); return; }
+  store.sections.push({ section: inp.value.trim(), groups: [] });
+  inp.value = ''; renderTodo(); scheduleSave();
+}
+document.getElementById('newSectionInput').addEventListener('keydown', e => { if (e.key === 'Enter') addSection(); });
+
+// ===== NEXT WEEK =====
+function renderNextWeek() {
+  const main = document.getElementById('nextMain');
+  main.innerHTML = '';
+
+  if (store.nextSections.length === 0) {
+    main.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:2rem 0;">Aucune tâche planifiée pour la semaine prochaine.</div>';
+  }
+
+  store.nextSections.forEach((section, si) => {
+    const secEl = document.createElement('div');
+    secEl.className = 'section';
+    const secHeader = document.createElement('div');
+    secHeader.className = 'section-header';
+    const secLabel = document.createElement('div');
+    secLabel.className = 'section-label';
+    secLabel.textContent = section.section;
+    const secDel = document.createElement('button');
+    secDel.className = 'section-delete-btn'; secDel.textContent = '×';
+    secDel.onclick = () => { if (confirm(`Supprimer "${section.section}" ?`)) { store.nextSections.splice(si, 1); renderNextWeek(); scheduleSave(); } };
+    secHeader.appendChild(secLabel); secHeader.appendChild(secDel);
+    secEl.appendChild(secHeader);
+
+    section.groups.forEach((group, gi) => {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'next-week-group';
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'group-header';
+      const groupTitle = document.createElement('div');
+      groupTitle.className = 'group-title'; groupTitle.textContent = group.title;
+      const badge = document.createElement('span');
+      badge.className = 'next-week-badge'; badge.textContent = 'Semaine pro';
+      const groupDel = document.createElement('button');
+      groupDel.className = 'group-delete-btn'; groupDel.textContent = '×';
+      groupDel.onclick = () => { if (confirm(`Supprimer "${group.title}" ?`)) { store.nextSections[si].groups.splice(gi, 1); renderNextWeek(); scheduleSave(); } };
+      groupHeader.appendChild(groupTitle); groupHeader.appendChild(badge); groupHeader.appendChild(groupDel);
+      groupEl.appendChild(groupHeader);
+
+      group.tasks.forEach((task, ti) => {
+        const row = document.createElement('div');
+        row.className = 'next-task-item';
+        const dot = document.createElement('div');
+        dot.className = 'next-color-dot';
+        dot.style.background = task.color === 'yellow' ? 'var(--yellow)' : task.color === 'orange' ? 'var(--orange)' : 'var(--turquoise)';
+        const text = document.createElement('span');
+        text.className = 'next-task-text'; text.textContent = task.text;
+        const del = document.createElement('button');
+        del.className = 'delete-btn'; del.textContent = '×'; del.style.opacity = '0';
+        del.onclick = () => { store.nextSections[si].groups[ti].tasks.splice(ti, 1); renderNextWeek(); scheduleSave(); };
+        row.addEventListener('mouseenter', () => del.style.opacity = '1');
+        row.addEventListener('mouseleave', () => del.style.opacity = '0');
+        row.appendChild(dot); row.appendChild(text); row.appendChild(del);
+        groupEl.appendChild(row);
+      });
+
+      // Add next task
+      const addRow = document.createElement('div');
+      addRow.className = 'add-next-task-row';
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.className = 'add-next-task-input'; inp.placeholder = 'Ajouter une tâche...';
+      let sel = 'orange';
+      const picker = document.createElement('div');
+      picker.className = 'add-color-picker';
+      COLORS.forEach(c => {
+        const dot2 = document.createElement('div');
+        dot2.className = `add-color-dot cd-${c}${c === sel ? ' selected' : ''}`;
+        dot2.onclick = () => { sel = c; picker.querySelectorAll('.add-color-dot').forEach(d => d.classList.remove('selected')); dot2.classList.add('selected'); };
+        picker.appendChild(dot2);
+      });
+      const btn = document.createElement('button');
+      btn.className = 'add-task-btn'; btn.textContent = '+';
+      const doAdd = () => { if (inp.value.trim()) { store.nextSections[si].groups[gi].tasks.push({ text: inp.value.trim(), color: sel, done: false }); inp.value = ''; renderNextWeek(); scheduleSave(); } else inp.focus(); };
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+      btn.onclick = doAdd;
+      addRow.appendChild(inp); addRow.appendChild(picker); addRow.appendChild(btn);
+      groupEl.appendChild(addRow);
+      secEl.appendChild(groupEl);
+    });
+
+    // Add group for next week
+    const addGroupRow = document.createElement('div');
+    addGroupRow.className = 'add-group-row';
+    const gInp = document.createElement('input');
+    gInp.type = 'text'; gInp.className = 'add-group-input'; gInp.placeholder = '+ Nouveau groupe...';
+    const gBtn = document.createElement('button');
+    gBtn.className = 'add-group-btn'; gBtn.textContent = '+';
+    const doAddGroup = () => { if (gInp.value.trim()) { store.nextSections[si].groups.push({ title: gInp.value.trim(), tasks: [] }); gInp.value = ''; renderNextWeek(); scheduleSave(); } else gInp.focus(); };
+    gInp.addEventListener('keydown', e => { if (e.key === 'Enter') doAddGroup(); });
+    gBtn.onclick = doAddGroup;
+    addGroupRow.appendChild(gInp); addGroupRow.appendChild(gBtn);
+    secEl.appendChild(addGroupRow);
+    main.appendChild(secEl);
+  });
+}
+
+function addNextSection() {
+  const inp = document.getElementById('newNextSectionInput');
+  if (!inp.value.trim()) { inp.focus(); return; }
+  store.nextSections.push({ section: inp.value.trim(), groups: [] });
+  inp.value = ''; renderNextWeek(); scheduleSave();
+}
+document.getElementById('newNextSectionInput').addEventListener('keydown', e => { if (e.key === 'Enter') addNextSection(); });
+
+// ===== KANBAN CRM =====
+function renderKanban() {
+  const board = document.getElementById('kanbanBoard');
+  board.innerHTML = '';
+
+  CRM_COLS.forEach(col => {
+    const colEl = document.createElement('div');
+    colEl.className = `kanban-col ${col.cls}`;
+
+    const accent = document.createElement('div');
+    accent.className = 'kanban-col-accent';
+    colEl.appendChild(accent);
+
+    const header = document.createElement('div');
+    header.className = 'kanban-col-header';
+    const title = document.createElement('div');
+    title.className = 'kanban-col-title'; title.textContent = col.label;
+    const count = document.createElement('div');
+    count.className = 'kanban-col-count'; count.textContent = (store.crm[col.id] || []).length;
+    header.appendChild(title); header.appendChild(count);
+    colEl.appendChild(header);
+
+    const cards = document.createElement('div');
+    cards.className = 'kanban-cards';
+    cards.dataset.col = col.id;
+
+    cards.addEventListener('dragover', e => { e.preventDefault(); cards.classList.add('drag-over'); });
+    cards.addEventListener('dragleave', () => cards.classList.remove('drag-over'));
+    cards.addEventListener('drop', e => {
+      e.preventDefault();
+      cards.classList.remove('drag-over');
+      if (dragCard !== null) {
+        const prospect = store.crm[dragColId].splice(dragCardIdx, 1)[0];
+        store.crm[col.id].push(prospect);
+        dragCard = null; dragColId = null; dragCardIdx = null;
+        renderKanban(); scheduleSave();
+      }
+    });
+
+    (store.crm[col.id] || []).forEach((p, pi) => {
+      const card = document.createElement('div');
+      card.className = 'prospect-card';
+      card.draggable = true;
+
+      card.addEventListener('dragstart', () => {
+        dragCard = p; dragColId = col.id; dragCardIdx = pi;
+        setTimeout(() => card.classList.add('dragging'), 0);
+      });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+      const name = document.createElement('div');
+      name.className = 'prospect-name'; name.textContent = p.name;
+      card.appendChild(name);
+
+      const meta = document.createElement('div');
+      meta.className = 'prospect-meta';
+      if (p.phone) meta.innerHTML += `📞 ${p.phone}<br>`;
+      if (p.email) meta.innerHTML += `✉ ${p.email}<br>`;
+      if (p.notes) meta.innerHTML += `<span style="font-style:italic">${p.notes}</span>`;
+      if (p.phone || p.email || p.notes) card.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'prospect-actions';
+      const editBtn = document.createElement('button');
+      editBtn.className = 'prospect-action-btn'; editBtn.textContent = '✏';
+      editBtn.onclick = (e) => { e.stopPropagation(); openModal(col.id, pi); };
+      const delBtn = document.createElement('button');
+      delBtn.className = 'prospect-action-btn prospect-action-del'; delBtn.textContent = '×';
+      delBtn.onclick = (e) => { e.stopPropagation(); if (confirm(`Supprimer ${p.name} ?`)) { store.crm[col.id].splice(pi, 1); renderKanban(); scheduleSave(); } };
+      actions.appendChild(editBtn); actions.appendChild(delBtn);
+      card.appendChild(actions);
+      cards.appendChild(card);
+    });
+
+    // Add prospect form
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-prospect-btn'; addBtn.textContent = '+ Ajouter un prospect';
+    addBtn.onclick = () => {
+      addBtn.style.display = 'none';
+      const form = document.createElement('div');
+      form.className = 'prospect-form';
+      const nameInp = document.createElement('input'); nameInp.placeholder = 'Nom / Entreprise *'; nameInp.type = 'text';
+      const phoneInp = document.createElement('input'); phoneInp.placeholder = 'Téléphone'; phoneInp.type = 'tel';
+      const emailInp = document.createElement('input'); emailInp.placeholder = 'Email'; emailInp.type = 'email';
+      const notesInp = document.createElement('textarea'); notesInp.placeholder = 'Notes...';
+      const formActions = document.createElement('div'); formActions.className = 'prospect-form-actions';
+      const saveBtn = document.createElement('button'); saveBtn.className = 'btn-save'; saveBtn.textContent = 'Ajouter';
+      saveBtn.onclick = () => {
+        if (!nameInp.value.trim()) { nameInp.focus(); return; }
+        if (!store.crm[col.id]) store.crm[col.id] = [];
+        store.crm[col.id].push({ name: nameInp.value.trim(), phone: phoneInp.value.trim(), email: emailInp.value.trim(), notes: notesInp.value.trim() });
+        renderKanban(); scheduleSave();
+      };
+      const cancelBtn = document.createElement('button'); cancelBtn.className = 'btn-cancel'; cancelBtn.textContent = 'Annuler';
+      cancelBtn.onclick = () => renderKanban();
+      formActions.appendChild(cancelBtn); formActions.appendChild(saveBtn);
+      form.appendChild(nameInp); form.appendChild(phoneInp); form.appendChild(emailInp); form.appendChild(notesInp); form.appendChild(formActions);
+      cards.appendChild(form);
+      nameInp.focus();
+    };
+
+    colEl.appendChild(cards);
+    colEl.appendChild(addBtn);
+    board.appendChild(colEl);
+  });
+}
+
+// ===== MODAL =====
+function openModal(colId, idx) {
+  const p = store.crm[colId][idx];
+  editingProspect = { colId, idx };
+  document.getElementById('modalName').value = p.name || '';
+  document.getElementById('modalPhone').value = p.phone || '';
+  document.getElementById('modalEmail').value = p.email || '';
+  document.getElementById('modalNotes').value = p.notes || '';
+  document.getElementById('modalOverlay').classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+  editingProspect = null;
+}
+
+function saveModal() {
+  if (!editingProspect) return;
+  const { colId, idx } = editingProspect;
+  store.crm[colId][idx] = {
+    name: document.getElementById('modalName').value.trim(),
+    phone: document.getElementById('modalPhone').value.trim(),
+    email: document.getElementById('modalEmail').value.trim(),
+    notes: document.getElementById('modalNotes').value.trim()
+  };
+  closeModal(); renderKanban(); scheduleSave();
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+
+// ===== KPI =====
+function renderKpi() {
+  // Prospects: count cards in "contact" column added this week
+  const prospectsCount = (store.crm.contact || []).length;
+  const prospectsPct = Math.min(Math.round(prospectsCount / 3 * 100), 100);
+  document.getElementById('kpiProspectsVal').textContent = prospectsCount;
+  document.getElementById('kpiProspectsBar').style.width = prospectsPct + '%';
+  document.getElementById('kpiProspectsBar').style.background = prospectsPct >= 100 ? 'var(--green, #4A7C59)' : 'var(--turquoise)';
+
+  // Posts
+  const postsCount = store.kpi ? (store.kpi.posts || 0) : 0;
+  const postsPct = Math.min(Math.round(postsCount / 4 * 100), 100);
+  document.getElementById('kpiPostsVal').textContent = postsCount;
+  document.getElementById('kpiPostsBar').style.width = postsPct + '%';
+  document.getElementById('kpiPostsBar').style.background = postsPct >= 100 ? 'var(--green, #4A7C59)' : 'var(--orange)';
+
+  // Client objectives
+  const container = document.getElementById('kpiClients');
+  container.innerHTML = '';
+  const clients = (store.kpi && store.kpi.clients) ? store.kpi.clients : [];
+
+  if (clients.length === 0) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:1.5rem 0;">Aucun client ajouté — utilise le champ ci-dessous.</div>';
+  }
+
+  clients.forEach((client, ci) => {
+    const card = document.createElement('div');
+    card.className = 'kpi-client-card';
+
+    const header = document.createElement('div');
+    header.className = 'kpi-client-header';
+    const name = document.createElement('div');
+    name.className = 'kpi-client-name';
+    name.textContent = client.name;
+    const del = document.createElement('button');
+    del.className = 'kpi-client-del'; del.textContent = '×';
+    del.onclick = () => { if (confirm(`Supprimer ${client.name} ?`)) { store.kpi.clients.splice(ci, 1); renderKpi(); scheduleSave(); } };
+    header.appendChild(name); header.appendChild(del);
+    card.appendChild(header);
+
+    (client.objectives || []).forEach((obj, oi) => {
+      const objRow = document.createElement('div');
+      objRow.className = 'kpi-objective';
+
+      const label = document.createElement('div');
+      label.className = 'kpi-objective-label';
+      label.textContent = obj.label;
+
+      const barWrap = document.createElement('div');
+      barWrap.style.cssText = 'flex:1;max-width:140px;';
+      const barBg = document.createElement('div');
+      barBg.className = 'kpi-bar-bg';
+      barBg.style.marginBottom = '0';
+      const bar = document.createElement('div');
+      bar.className = 'kpi-bar';
+      bar.style.background = 'var(--accent)';
+      const pct = obj.target > 0 ? Math.min(Math.round((obj.current || 0) / obj.target * 100), 100) : 0;
+      bar.style.width = pct + '%';
+      barBg.appendChild(bar);
+      barWrap.appendChild(barBg);
+
+      const controls = document.createElement('div');
+      controls.className = 'kpi-objective-controls';
+
+      const minusBtn = document.createElement('button');
+      minusBtn.className = 'kpi-count-btn'; minusBtn.textContent = '−';
+      minusBtn.onclick = () => { store.kpi.clients[ci].objectives[oi].current = Math.max(0, (obj.current || 0) - 1); renderKpi(); scheduleSave(); };
+
+      const valSpan = document.createElement('span');
+      valSpan.style.cssText = 'font-size:12px;font-weight:500;color:var(--accent);min-width:40px;text-align:center;';
+      valSpan.textContent = `${obj.current || 0} / ${obj.target}`;
+
+      const plusBtn = document.createElement('button');
+      plusBtn.className = 'kpi-count-btn'; plusBtn.textContent = '+';
+      plusBtn.onclick = () => { store.kpi.clients[ci].objectives[oi].current = (obj.current || 0) + 1; renderKpi(); scheduleSave(); };
+
+      const targetInp = document.createElement('input');
+      targetInp.type = 'number'; targetInp.className = 'kpi-obj-input';
+      targetInp.value = obj.target; targetInp.min = 1; targetInp.title = 'Objectif';
+      targetInp.onchange = () => { store.kpi.clients[ci].objectives[oi].target = parseInt(targetInp.value) || 1; renderKpi(); scheduleSave(); };
+
+      const objDel = document.createElement('button');
+      objDel.style.cssText = 'background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px 4px;opacity:0;transition:opacity 0.15s;';
+      objDel.textContent = '×';
+      objDel.onclick = () => { store.kpi.clients[ci].objectives.splice(oi, 1); renderKpi(); scheduleSave(); };
+      objRow.addEventListener('mouseenter', () => objDel.style.opacity = '1');
+      objRow.addEventListener('mouseleave', () => objDel.style.opacity = '0');
+
+      controls.appendChild(minusBtn); controls.appendChild(valSpan); controls.appendChild(plusBtn); controls.appendChild(targetInp); controls.appendChild(objDel);
+      objRow.appendChild(label); objRow.appendChild(barWrap); objRow.appendChild(controls);
+      card.appendChild(objRow);
+    });
+
+    // Add objective
+    const addObjRow = document.createElement('div');
+    addObjRow.className = 'kpi-add-objective-row';
+    const objInp = document.createElement('input');
+    objInp.type = 'text'; objInp.className = 'kpi-add-objective-input'; objInp.placeholder = 'Nouvel objectif... (ex: posts publiés)';
+    const objBtn = document.createElement('button');
+    objBtn.className = 'add-task-btn'; objBtn.textContent = '+';
+    const doAddObj = () => {
+      if (!objInp.value.trim()) { objInp.focus(); return; }
+      store.kpi.clients[ci].objectives.push({ label: objInp.value.trim(), target: 4, current: 0 });
+      objInp.value = ''; renderKpi(); scheduleSave();
+    };
+    objInp.addEventListener('keydown', e => { if (e.key === 'Enter') doAddObj(); });
+    objBtn.onclick = doAddObj;
+    addObjRow.appendChild(objInp); addObjRow.appendChild(objBtn);
+    card.appendChild(addObjRow);
+    container.appendChild(card);
+  });
+}
+
+function changePostCount(delta) {
+  if (!store.kpi) store.kpi = { posts: 0, clients: [] };
+  store.kpi.posts = Math.max(0, (store.kpi.posts || 0) + delta);
+  renderKpi(); scheduleSave();
+}
+
+function addKpiClient() {
+  const inp = document.getElementById('kpiNewClient');
+  if (!inp.value.trim()) { inp.focus(); return; }
+  if (!store.kpi) store.kpi = { posts: 0, clients: [] };
+  if (!store.kpi.clients) store.kpi.clients = [];
+  store.kpi.clients.push({ name: inp.value.trim(), objectives: [] });
+  inp.value = ''; renderKpi(); scheduleSave();
+}
+document.getElementById('kpiNewClient').addEventListener('keydown', e => { if (e.key === 'Enter') addKpiClient(); });
+
+loadData();
+</script>
+</body>
+</html>
