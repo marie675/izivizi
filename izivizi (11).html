@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IZI VIZI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F4F4F0;
+  --card: #FAFAFA;
+  --text: #1A1714;
+  --muted: #8C8479;
+  --accent: #2A7A6F;
+  --border: #E0DDD8;
+  --done-text: #B5AEA6;
+  --yellow: #F5C842;
+  --yellow-bg: #FFFAE8;
+  --orange: #E8853A;
+  --orange-bg: #FFF3E8;
+  --turquoise: #2AADA0;
+  --turquoise-bg: #E8F8F6;
+  --next-bg: #F6F5F1;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem 5rem; }
+
+/* NAV TABS */
+.tabs { max-width: 780px; margin: 0 auto 2rem; display: flex; gap: 4px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 4px; }
+.tab { flex: 1; text-align: center; padding: 0.5rem; font-size: 13px; font-weight: 500; border-radius: 9px; cursor: pointer; color: var(--muted); border: none; background: none; transition: all 0.2s; }
+.tab.active { background: var(--accent); color: white; }
+.tab:hover:not(.active) { background: var(--bg); }
+
+.page { display: none; max-width: 780px; margin: 0 auto; }
+.page.active { display: block; }
+
+/* HEADER */
+header { margin-bottom: 1.5rem; }
+header h1 { font-family: 'DM Serif Display', serif; font-size: 2rem; font-weight: 400; }
+.legend { display: flex; gap: 12px; margin-top: 0.75rem; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dot-yellow { background: var(--yellow); }
+.dot-orange { background: var(--orange); }
+.dot-turquoise { background: var(--turquoise); }
+
+/* PROGRESS */
+.progress-wrap { margin-top: 1.25rem; }
+.progress-bar-bg { background: var(--border); border-radius: 99px; height: 6px; overflow: hidden; }
+.progress-bar { height: 6px; background: var(--accent); border-radius: 99px; width: 0%; transition: width 0.5s ease; }
+.progress-meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 0.4rem; }
+.progress-pct { font-size: 13px; font-weight: 500; color: var(--accent); }
+.progress-time { font-size: 12px; color: var(--muted); }
+
+/* REINFORCE */
+.reinforce-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+.reinforce-main { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--accent); margin-bottom: 0.4rem; }
+.reinforce-detail { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.dot-inline { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+
+/* TARGET GRID */
+.target-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+.target-title { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 0.75rem; }
+.target-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-items: start; }
+.target-day { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem 0.5rem; text-align: center; font-size: 12px; min-height: 60px; height: auto; }
+.target-day.today { border-color: var(--accent); background: #EAF5F3; }
+.target-day.past { opacity: 0.45; }
+.target-day-name { font-weight: 500; color: var(--muted); font-size: 11px; margin-bottom: 4px; }
+.target-day.today .target-day-name { color: var(--accent); }
+.target-dots { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; min-height: 20px; align-items: center; }
+.tdot { width: 11px; height: 11px; border-radius: 50%; }
+.target-time { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.target-day.today .target-time { color: var(--accent); font-weight: 500; }
+.target-empty { font-size: 11px; color: var(--done-text); }
+
+/* STATUS */
+.status { font-size: 13px; padding: 0.6rem 1rem; border-radius: 8px; display: none; margin-bottom: 1rem; }
+.status.visible { display: block; }
+.status.saving { background: #FFF8E7; color: #7A6000; border: 1px solid #F0D88A; }
+.status.saved { background: var(--card); color: var(--accent); border: 1px solid var(--border); }
+.status.error { background: #FEF0EE; color: #9B2C2C; border: 1px solid #FCA5A5; }
+.status.loading { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+
+/* SECTIONS */
+.section { margin-bottom: 2.5rem; }
+.section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+.section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); flex: 1; padding-left: 2px; }
+.section-delete-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 5px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; line-height: 1; }
+.section-header:hover .section-delete-btn { opacity: 1; }
+.section-delete-btn:hover { color: #C45C3A; }
+
+.group { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.75rem; overflow: hidden; }
+.group-header { display: flex; align-items: center; padding: 0.75rem 1rem 0.5rem; border-bottom: 1px solid var(--border); gap: 8px; }
+.group-title { font-size: 13px; font-weight: 500; color: var(--muted); flex: 1; }
+.group-delete-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 5px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; line-height: 1; }
+.group-header:hover .group-delete-btn { opacity: 1; }
+.group-delete-btn:hover { color: #C45C3A; }
+
+/* TASK ITEMS */
+.task-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); transition: background 0.15s; border-left: 3px solid transparent; }
+.task-item:last-of-type { border-bottom: none; }
+.task-item:hover { background: #F5F4F0; }
+.task-item.yellow { border-left-color: var(--yellow); background: var(--yellow-bg); }
+.task-item.orange { border-left-color: var(--orange); background: var(--orange-bg); }
+.task-item.turquoise { border-left-color: var(--turquoise); background: var(--turquoise-bg); }
+.task-item input[type="checkbox"] { appearance: none; width: 18px; height: 18px; border: 1.5px solid var(--border); border-radius: 5px; flex-shrink: 0; cursor: pointer; transition: all 0.2s; background: white; position: relative; }
+.task-item input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+.task-item input[type="checkbox"]:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 6px; height: 10px; border: 2px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
+.task-text { font-size: 14px; color: var(--text); flex: 1; line-height: 1.4; }
+.task-item input:checked ~ .task-text { color: var(--done-text); text-decoration: line-through; }
+.color-picker { display: flex; gap: 5px; align-items: center; }
+.color-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; flex-shrink: 0; }
+.color-dot:hover { transform: scale(1.2); }
+.color-dot.active { border-color: rgba(0,0,0,0.25); transform: scale(1.15); }
+.color-dot.cd-yellow { background: var(--yellow); }
+.color-dot.cd-orange { background: var(--orange); }
+.color-dot.cd-turquoise { background: var(--turquoise); }
+.delete-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 18px; padding: 2px 4px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; line-height: 1; }
+.task-item:hover .delete-btn { opacity: 1; }
+.delete-btn:hover { color: #C45C3A; }
+
+/* NEXT WEEK TASKS */
+.next-week-group { background: var(--next-bg); border: 1px dashed var(--border); border-radius: 12px; margin-bottom: 0.75rem; overflow: hidden; opacity: 0.7; }
+.next-week-group .group-header { background: var(--next-bg); }
+.next-week-badge { font-size: 10px; background: var(--border); color: var(--muted); padding: 2px 7px; border-radius: 99px; font-weight: 500; }
+.next-task-item { display: flex; align-items: center; gap: 10px; padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); color: var(--muted); border-left: 3px solid var(--border); }
+.next-task-item:last-of-type { border-bottom: none; }
+.next-task-text { font-size: 14px; flex: 1; font-style: italic; }
+.next-color-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; opacity: 0.5; }
+
+/* ADD ROWS */
+.add-task-row { display: flex; align-items: center; gap: 8px; padding: 0.5rem 1rem 0.6rem; border-top: 1px dashed var(--border); }
+.add-task-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; }
+.add-task-input::placeholder { color: var(--muted); }
+.add-color-picker { display: flex; gap: 4px; align-items: center; }
+.add-color-dot { width: 12px; height: 12px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.15s, border-color 0.15s; }
+.add-color-dot:hover { transform: scale(1.2); }
+.add-color-dot.selected { border-color: rgba(0,0,0,0.3); transform: scale(1.15); }
+.add-color-dot.cd-yellow { background: var(--yellow); }
+.add-color-dot.cd-orange { background: var(--orange); }
+.add-color-dot.cd-turquoise { background: var(--turquoise); }
+.add-task-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 20px; line-height: 1; padding: 0 2px; transition: transform 0.15s; }
+.add-task-btn:hover { transform: scale(1.2); }
+.add-group-row { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+.add-group-input { flex: 1; border: 1px dashed var(--border); border-radius: 10px; padding: 0.55rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: transparent; outline: none; transition: border-color 0.2s; }
+.add-group-input::placeholder { color: var(--muted); }
+.add-group-input:focus { border-color: var(--accent); }
+.add-group-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 20px; line-height: 1; padding: 0 4px; transition: transform 0.15s; }
+.add-group-btn:hover { transform: scale(1.2); }
+.add-section-wrap { margin-top: 0.5rem; margin-bottom: 1rem; }
+.add-section-row { display: flex; align-items: center; gap: 8px; }
+.add-section-input { flex: 1; border: 1px dashed var(--border); border-radius: 10px; padding: 0.65rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); background: transparent; outline: none; transition: border-color 0.2s; }
+.add-section-input::placeholder { color: var(--muted); }
+.add-section-input:focus { border-color: var(--accent); }
+.add-section-btn { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 22px; line-height: 1; padding: 0 4px; transition: transform 0.15s; }
+.add-section-btn:hover { transform: scale(1.2); }
+
+/* NEXT WEEK ADD */
+.add-next-task-row { display: flex; align-items: center; gap: 8px; padding: 0.5rem 1rem 0.6rem; border-top: 1px dashed var(--border); }
+.add-next-task-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); outline: none; font-style: italic; }
+.add-next-task-input::placeholder { color: var(--border); }
+
+/* ===== KANBAN CRM ===== */
+.crm-header { margin-bottom: 1.5rem; }
+.crm-header h2 { font-family: 'DM Serif Display', serif; font-size: 1.6rem; font-weight: 400; }
+.crm-header p { font-size: 13px; color: var(--muted); margin-top: 0.3rem; }
+
+.kanban-board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; align-items: start; }
+
+.kanban-col { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.kanban-col-header { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+.kanban-col-title { font-size: 12px; font-weight: 500; color: var(--muted); flex: 1; }
+.kanban-col-count { font-size: 11px; background: var(--bg); color: var(--muted); padding: 1px 7px; border-radius: 99px; }
+.kanban-col-accent { height: 3px; }
+
+.col-lead .kanban-col-accent { background: #CBD5E1; }
+.col-contact .kanban-col-accent { background: #94A3B8; }
+.col-discussion .kanban-col-accent { background: var(--yellow); }
+.col-offre .kanban-col-accent { background: var(--orange); }
+.col-relance .kanban-col-accent { background: #F97316; }
+.col-rdv .kanban-col-accent { background: var(--turquoise); }
+.col-client .kanban-col-accent { background: #4A7C59; }
+.col-perdu .kanban-col-accent { background: #E0DDD8; }
+
+.kanban-cards { min-height: 80px; padding: 8px; display: flex; flex-direction: column; gap: 6px; transition: background 0.15s; }
+.kanban-cards.drag-over { background: #EAF5F3; border-radius: 0 0 12px 12px; }
+
+.prospect-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.65rem 0.75rem;
+  cursor: grab;
+  transition: box-shadow 0.15s, transform 0.15s;
+  position: relative;
+}
+.prospect-card:active { cursor: grabbing; }
+.prospect-card.dragging { opacity: 0.4; transform: scale(0.97); }
+.prospect-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.prospect-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.prospect-meta { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.prospect-actions { position: absolute; top: 6px; right: 6px; display: none; gap: 4px; }
+.prospect-card:hover .prospect-actions { display: flex; }
+.prospect-action-btn { background: none; border: none; cursor: pointer; color: var(--muted); font-size: 13px; padding: 2px 4px; border-radius: 4px; line-height: 1; }
+.prospect-action-btn:hover { color: var(--accent); background: var(--bg); }
+.prospect-action-del:hover { color: #C45C3A; }
+
+/* Add prospect form */
+.add-prospect-btn {
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+  margin: 4px 0 8px;
+}
+.add-prospect-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.prospect-form { background: var(--bg); border-radius: 8px; padding: 0.75rem; margin: 4px 0 8px; display: flex; flex-direction: column; gap: 6px; }
+.prospect-form input, .prospect-form textarea {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.4rem 0.6rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  background: white;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.prospect-form input:focus, .prospect-form textarea:focus { border-color: var(--accent); }
+.prospect-form textarea { resize: none; height: 52px; }
+.prospect-form-actions { display: flex; gap: 6px; }
+.btn-save { background: var(--accent); color: white; border: none; border-radius: 6px; padding: 0.35rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; flex: 1; }
+.btn-cancel { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--muted); cursor: pointer; }
+
+/* Prospect edit modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; z-index: 100; }
+.modal-overlay.visible { display: flex; }
+.modal { background: white; border-radius: 14px; padding: 1.5rem; width: 360px; display: flex; flex-direction: column; gap: 10px; }
+.modal h3 { font-family: 'DM Serif Display', serif; font-size: 1.2rem; font-weight: 400; }
+.modal input, .modal textarea { border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; width: 100%; }
+.modal input:focus, .modal textarea:focus { border-color: var(--accent); }
+.modal textarea { resize: none; height: 80px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 4px; }
+.modal-save { background: var(--accent); color: white; border: none; border-radius: 8px; padding: 0.5rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; flex: 1; }
+.modal-cancel { background: none; border: 1px solid var(--border); border-radius: 8px; padding: 0.5rem 1rem; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--muted); cursor: pointer; }
+
+.spinner { display: inline-block; width: 10px; height: 10px; border: 2px solid var(--muted); border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 6px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* KPI */
+.kpi-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+.kpi-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.6rem; }
+.kpi-label { font-size: 14px; font-weight: 500; color: var(--text); }
+.kpi-value { font-size: 13px; font-weight: 500; color: var(--accent); }
+.kpi-bar-bg { background: var(--border); border-radius: 99px; height: 6px; overflow: hidden; margin-bottom: 0.5rem; }
+.kpi-bar { height: 6px; border-radius: 99px; width: 0%; transition: width 0.5s ease; }
+.kpi-hint { font-size: 11px; color: var(--muted); }
+.kpi-counter-row { display: flex; align-items: center; gap: 12px; }
+.kpi-count-btn { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; width: 28px; height: 28px; font-size: 16px; cursor: pointer; color: var(--text); display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+.kpi-count-btn:hover { background: var(--border); }
+.kpi-client-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+.kpi-client-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+.kpi-client-name { font-size: 13px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; flex: 1; }
+.kpi-client-del { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 16px; padding: 2px 5px; border-radius: 4px; line-height: 1; }
+.kpi-client-card:hover .kpi-client-del { opacity: 1; }
+.kpi-client-del:hover { color: #C45C3A; }
+.kpi-objective { display: flex; align-items: center; gap: 10px; margin-bottom: 0.5rem; }
+.kpi-objective-label { font-size: 13px; color: var(--text); flex: 1; }
+.kpi-objective-controls { display: flex; align-items: center; gap: 6px; }
+.kpi-obj-input { width: 44px; border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 12px; text-align: center; outline: none; background: white; }
+.kpi-obj-input:focus { border-color: var(--accent); }
+.kpi-obj-current { display: flex; align-items: center; gap: 4px; }
+.kpi-add-objective-row { display: flex; align-items: center; gap: 8px; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed var(--border); }
+.kpi-add-objective-input { flex: 1; border: none; background: transparent; font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text); outline: none; }
+.kpi-add-objective-input::placeholder { color: var(--muted); }
+.kpi-add-client-row { display: flex; align-items: center; gap: 8px; margin-top: 0.5rem; }
+
+
+footer { max-width: 780px; margin: 2rem auto 0; font-size: 11px; color: var(--muted); text-align: center; }
+
+/* TIMER */
+.timer-btn { background: none; border: none; cursor: pointer; color: var(--border); font-size: 13px; padding: 2px 4px; transition: color 0.2s, opacity 0.2s; display: flex; align-items: center; flex-shrink: 0; opacity: 0; line-height: 1; }
+.task-item:hover .timer-btn { opacity: 1; }
+.timer-btn:hover { color: var(--accent); }
+.timer-btn.running { color: var(--accent); opacity: 1 !important; }
+.timer-display { font-size: 10px; color: var(--done-text); min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; flex-shrink: 0; letter-spacing: 0.02em; }
+.timer-display.running { color: var(--accent); }
+.timer-display.has-time { color: var(--muted); }
+
+/* DRAG & DROP */
+.task-item.dragging { opacity: 0.35; }
+.task-item { cursor: grab; }
+.task-item:active { cursor: grabbing; }
+.group.drag-over-group { outline: 2px dashed var(--accent); outline-offset: -2px; border-radius: 12px; }
+
+/* INLINE EDIT */
+.task-edit-input { flex: 1; border: none; border-bottom: 1.5px solid var(--accent); background: transparent; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); outline: none; padding: 0 2px; }
+
+/* REPORT BUTTON */
+.report-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 11px; padding: 2px 5px; border-radius: 4px; transition: opacity 0.15s, color 0.15s; white-space: nowrap; flex-shrink: 0; }
+.task-item:hover .report-btn { opacity: 1; }
+.report-btn:hover { color: var(--turquoise); }
+
+/* NEXT WEEK PROGRESS */
+.next-week-progress { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+.next-week-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 0.75rem; }
+
+/* URGENT */
+.urgent-btn { background: none; border: none; cursor: pointer; font-size: 13px; padding: 2px 3px; opacity: 0; transition: opacity 0.15s; flex-shrink: 0; line-height: 1; }
+.task-item:hover .urgent-btn { opacity: 0.4; }
+.urgent-btn.active { opacity: 1 !important; }
+.urgent-badge { font-size: 10px; font-weight: 500; color: #C0392B; background: #FDECEA; border-radius: 4px; padding: 1px 6px; flex-shrink: 0; letter-spacing: 0.03em; display: none; }
+.urgent-badge.visible { display: inline-block; }
+.task-item.urgent { border-left-color: #E74C3C !important; }
+
+/* DAY PROGRESS BAR */
+.target-day-progress { margin-top: 5px; background: var(--border); border-radius: 99px; height: 3px; overflow: hidden; }
+.target-day-progress-bar { height: 3px; border-radius: 99px; transition: width 0.4s ease; }
+
+/* DONE ACCORDION */
+.done-toggle { display: flex; align-items: center; gap: 6px; padding: 0.45rem 1rem; border-top: 1px dashed var(--border); cursor: pointer; font-size: 12px; color: var(--muted); user-select: none; background: none; border-left: none; border-right: none; border-bottom: none; width: 100%; text-align: left; transition: color 0.15s; }
+.done-toggle:hover { color: var(--accent); }
+.done-toggle-arrow { font-size: 10px; transition: transform 0.2s; display: inline-block; }
+.done-toggle.open .done-toggle-arrow { transform: rotate(90deg); }
+.done-list { display: none; }
+.done-list.open { display: block; }
+.done-task-item { display: flex; align-items: center; gap: 10px; padding: 0.5rem 1rem; border-bottom: 1px solid var(--border); opacity: 0.5; }
+.done-task-item:last-child { border-bottom: none; }
+.done-task-text { font-size: 13px; color: var(--done-text); text-decoration: line-through; flex: 1; }
+.done-restore-btn { opacity: 0; background: none; border: none; cursor: pointer; color: var(--muted); font-size: 11px; padding: 2px 5px; transition: opacity 0.15s; }
+.done-task-item:hover .done-restore-btn { opacity: 1; }
+.done-restore-btn:hover { color: var(--accent); }
+
+/* REPORT COUNTER */
+.report-count { font-size: 10px; font-weight: 500; color: var(--orange); background: var(--orange-bg); border-radius: 4px; padding: 1px 5px; flex-shrink: 0; display: none; }
+.report-count.visible { display: inline-block; }
+.report-count.blocked { color: #C0392B; background: #FDECEA; }
+.report-btn.disabled { opacity: 0.25 !important; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div style="max-width:780px;margin:0 auto 1.5rem;">
+  <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FscXVlXzEiIGRhdGEtbmFtZT0iQ2FscXVlIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDk0NC45NSA5NTQuNTEiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICNlOWIwMmQ7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxnIGlkPSJDYWxxdWVfMyIgZGF0YS1uYW1lPSJDYWxxdWUgMyI+CiAgICA8Zz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTkuNjQsNTkyLjgzYzEzLjI3LDI1LjgxLDM0LjQ1LDQ2LjEzLDY0LjI2LDQxLjU1LDIxLjk2LTMuMzgsMzguODgtMjMuMzgsNDMuNDUtNDUuMTIsNS4zNy0yNS41NC0xMC43Ny01NS4yOS0xNy4xMy04MC4xMy04LjM2LTMyLjctMTEuMDYtNTMuMjMtMTAuMjUtODcuNC41Ny0yNC4zMiw5LjY5LTUzLjU0LDE0LjQtNzYuODIsNC4wOS0yMC4yNC45LTM4LjUxLTE4Ljg2LTQ4Ljc4LTEzLjI5LTYuOTEtMzAuMDgtNi41NS00My4wNy45MS0xNC4yOSw4LjIxLTIyLjkyLDIzLjUtMjkuNDUsMzguNjRDLTQuMzcsMzk5LjEtMS41NCw0NjQuOCwyLjcyLDUzMS45OWMxLjExLDE3LjU0LDYuNjQsNDAuODQsMTYuOTMsNjAuODRaIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTIyNi43NCwyMTkuNjRjOC4yNC01LjI3LDE2LjU3LTEwLjAxLDI0Ljg4LTEyLjk4LDM0LjA1LTEyLjE4LDIxLjE3LDIuMzQsMy40NywyMC40Ni0yMC4xOSwyMC42Ni0zMC44NywzMi43OS00NS45OSw0OS45My0yOC44NCwzMi42OC02Ni4wMyw3OS42NC03NS42NiwxMjMuMjYtNi40MywyOS4xMi00LjY0LDg0LjYxLDI1LjkxLDEwMC4zNCwyNy43MSwxNC4yOCw0NS4wMy0xLjM2LDYyLjg5LTIwLjU5LDIxLjc3LTIzLjQ0LDUxLjU1LTQwLjQxLDgxLjYyLTUxLDE3LjA2LTYuMDIsMzUuMDUtOS42Myw1MS4zNy0xNy40NCw0Mi43OS0yMC40OSw0NS44NS0zNC40NCw1MS4yOC00Ny4yNSw3LjY5LTE4LjEzLDEuNDgtNDUuMDEtMTUuOTItNTguNzMtMTEuMjktOC45LTI2LjgyLTEwLjg3LTQxLjAxLTguNjEtMjMuNjgsMy43OC00MC4xNywxNy44LTU4LjEyLDMyLjctMTEuNzEsOS43Mi0xMy4xOSwxMy4xMi0zMi40NywyNS41MS05LjM0LDYuMDEuNDctMTYuNjgsNy4yNi0yNS40NywzNS4wOC00NS40Miw3MC4xNy05MC44NCwxMDUuMjUtMTM2LjI3LDI4LjUzLTM2Ljk0LDYwLjg4LTEwMi44OC04LjI4LTExNy40Ni0yMC43NC00LjM3LTQyLjEzLDEuODgtNjIuMTQsOC44Ni00Mi45MiwxNC45Ni04NC41NywzMy41Ni0xMjQuMzgsNTUuNS0zMy40LDE4LjQyLTczLjQyLDM5LjYyLTgxLjEsODEuMTItNi4xOCwzMy4zNywxNy45MSw1NC4wMyw1MC4yMiw0Ny4yMywxNy4yNC0zLjYzLDMwLjIzLTE1LjMsNDQuNzItMjQuNDUsMTEuMzktNy4xOSwyMy42Ny0xNi42MiwzNi4yMi0yNC42NVoiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNTI3LjAyLDMwMi40YzEwLjc5LTIzLjU1LDE1LjM4LTUxLjQxLDE3LjYtNzguNjQsMi4yNC0yNy41LDEuNDItMzEuMDMsMS42OC01OC42NS4yOC0yOS41Mi02Ljk0LTg0LjQ4LTMwLjM4LTEwNS45NS0zMS42Mi0yOC45Ni03Mi44NC0xOC4xOS03Ny42MiwxMS4wOC0zLjM4LDIwLjY5LDguNjUsMzEuNy0xLjY4LDg4Ljk0LTkuMzQsNTEuNzctNi4xNSwzOC45OC0xMS44Myw2NS42LTExLjksNTUuNzIsNC4wMyw4NS4zNCw4LjA3LDk0LjA5LDEzLjgyLDI5Ljk4LDQzLjI3LDMyLjA4LDU4LjgxLDIzLjc4LDIwLjA4LTEwLjcyLDI3LjM4LTIyLjgzLDM1LjM1LTQwLjI1WiIvPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik00Mi4xNSw4MzAuNTFjOS42OCwzMi42OCwyNC43Niw2My4xMiw0Ny45MSw5NC4yNiw0Mi44Myw1Ny42Myw5OC45OSwyMy42OCwxMTcuOTQtMzUuMywxMC40Ni0zMi41NiwxMC4zMy02Ny40MywxNS4wNy0xMDEuMzEsOS4wOS02NC45MiwzNi43Ni0xMjcuMTIsNzguODgtMTc3LjM0LDEzLjkyLTE2LjU5LDI5LjYyLTMyLjI3LDM4LjU0LTUyLDguOTItMTkuNzMsOS4zOS00NS4yOC01LjYxLTYwLjkyLTY1LjIxLTY3Ljk4LTE1OC42Myw4Ni44LTE3Ny4wMSwxMzIuNDMtMTAuMTcsMjUuMjYtMTcuMTYsNTEuODQtMjAuNSw3OC44Ny0yLjAyLDE2LjMxLTMuMjUsNDEuMDUtNC43Nyw2My44Mi0xLjE0LDE3LjA1LTExLjQ0LTIxLjItMTIuNTgtMjcuNTQtMi40OS0xMy45LTUuOTItMjcuODYtMTEuNTctNDAuODQtMTAuNTQtMjQuMjMtMzAuMjItNDEuMDYtNTYuMzItMjUuOS0xMC41MSw2LjEtMTcuNywxNi45NS0yMS4zLDI4LjU2LTMuNiwxMS42MS0zLjksMjQtMy4wOSwzNi4xMiwyLjEyLDMxLjY2LDYuNDMsNjAuMTUsMTQuNDEsODcuMVoiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjg3LjI3LDY5NS4wNGMtMTUuMDgsMzguNDItMjIuODMsODAuNzgtMjUuMDUsMTE2LjItMi40NSwzOC45OSwyMi44NSw4Ny4zNyw3MC41MSw2OC41OSwyNi43Ni0xMC41NSwzOC44OS0zNC4yNyw0MS40LTYyLDEuNDctMTYuMjEtMS4xOC0zMy4xNy0uNDItNDkuNzIuODgtMTkuMDQuOTYtMzIuMDIsNy41OC01NS45OSw0Ljg3LTE3LjY0LDEyLjgzLTMyLjc3LDE5LjUxLTQ5LjgzLDYuOTgtMTcuODIsMTcuMzgtNDguNzUtMy43My01OS41MS0yNS4zLTEyLjktNDMuNzMuNTYtNTUuNTQsMTAuNTYtMjMuOTIsMjAuMjQtNDEuNjUsNDkuNi01NC4yNiw4MS43MVoiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNNDE0Ljk5LDczMS4xN2MtMy4wNCwyMy41My0xLjI2LDQ4LjA0LDE0LjQ0LDY0LjE2LDE5LjUyLDIwLjA0LDQ3LjcsMTQuMyw3MC4wNiwyLjY4LDM0Ljg1LTE4LjEsNjYuOTUtMzguMDUsODUuMTEtNzQuNDksNS4yLTEwLjQzLDkuMS0yMS44OSw4LjQ1LTMzLjUyLS42NS0xMS42NC02LjU4LTIzLjQ3LTE2Ljk1LTI4Ljc4LTcuNjgtMy45NC0yMC4wNi00LjUxLTI4LjQ3LTIuMy00LjQ5LDEuMTgtMjcuODMsMTEuNjQtMjguNTYsMTUuNjIsNy4yNi00MC42NywzNy43MS03OC40LDU4LjI5LTExMy40MywxOC4zNS0zMS4yMywzNi42OS02Mi40NSw1NS4wNC05My42OCwxNi4yMy0yNy42Myw0MC4wMi01Ny4yNyw0Ni4zMS04OS4zMSw2LjY4LTMzLjk5LTIxLjI3LTUzLjcxLTUzLjAyLTUyLjUyLTE2Ljk4LjY0LTMzLjI4LDYuNTctNDkuMDIsMTIuOTctMzcuMTEsMTUuMDgtNzIuOTgsMzMuMTktMTA3LjE4LDU0LjA0LTMxLjA1LDE4Ljk0LTY5LjYsMzUuODUtODguMzMsNjguNjQtOS45OCwxNy40Ny0xMy41OSwzOS4zMy02LjEyLDU4LjAxLDcuNDcsMTguNjgsNzYuMTUsMTIuODgsOTEuMDgtLjgyLDE0LjQ5LTEzLjMsMzIuMTctMjYuNTIsNDMuOC0zMi4zNywyNy40OS0xMy44MiwyOC4wNC03LjM3LDcuMywxNy44NS0xNy42OCwyMS41LTI3LjQ4LDM5LjQ3LTM4LjcxLDU5LjA4LTIzLjQ5LDQxLjAxLTQyLjEsODQuODMtNTUuMjEsMTMwLjI0LTMuMjEsMTEuMTEtNi41NywyNC4zNi04LjMyLDM3Ljk0WiIvPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik02MzguMzEsNjgzLjY5YzcuMzMsMi4xMywyNS43MS4zMywzMi44MS0zLjM1LDI2LjQ4LTEzLjczLDM2LjIyLTM3LjI1LDQ2LjA5LTYxLjcsMTYuNzctNDEuNTUsMjguODMtOTEuMjMsMjEuNTUtMTM1Ljk4LTEuNDItOC43My0zLjcyLTE3Ljc5LTkuNzctMjQuMjQtOC42OC05LjI0LTIzLjMyLTEwLjc2LTM1LjM3LTYuODEtMzguNTksMTIuNjQtNTEuNjYsNjcuMTEtNjguMTIsMTAwLTE2Ljg5LDMzLjc0LTM4LjYsMTE3LjExLDEyLjgxLDEzMi4wOFoiLz4KICAgIDwvZz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTgzNy40LDI3MS40OWMyNC42Mi0xMC41Myw1My41Mi0yMS4zMiw3Mi41OC0yMS4zNywxOS4wNi0uMDUsMjguMjgsMTAuNjIsMzIuNzUsMjEuMDcsNC40NywxMC40NSwyLjc1LDI0LjIyLTEwLjQ1LDM3Ljk3LTEzLjIsMTMuNzUtMzcuOSwyNy40Ny02Mi41MSwzOC0yNi41LDExLjM0LTUzLjE0LDIyLjE4LTcyLjgsMjEuMzctMTYuODctLjY5LTI4LjQtMTEuNDItMzIuNTMtMjEuMDctMy45NC05LjIyLTQuMjQtMjMuODUsNS44Ny0zNS45NCwxMi44LTE1LjMxLDM5LjU5LTI4LjI2LDY3LjEtNDAuMDNaIi8+CiAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik03NDYuMTgsMTQ3LjA0Yy0xNC4wOCwzNS43NS0zMS43MSw3Ni4zMy00OC4yNyw5Ni44Ny0xNi41NiwyMC41NC0zMi4xMiwyMS4yMS00My4yMywxNi42My0xMS4xNy00LjYtMjAuMzgtMTEuODMtMTguNDgtMzguMTUsMS44OS0yNi4zMiwxNC44Ny03MS41MiwyOC45NS0xMDcuMjcsMTUuMTYtMzguNDksMzAuNzgtNzYuNjgsNDguNDYtOTcuMTEsMTUuMTctMTcuNTIsMzIuNzEtMjAuNDYsNDMuMDQtMTYuNCw5Ljg4LDMuODksMjAuMzUsMTYuNDYsMTkuOTksMzcuOTktLjQ1LDI3LjI1LTE0LjczLDY3LjQ4LTMwLjQ2LDEwNy40M1oiLz4KICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTg1MS45NiwyMTIuNDJjLTIyLjM5LDI0LjI1LTQ5LjI5LDUxLjEyLTY5Ljc3LDYxLjY0LTIwLjQ5LDEwLjUyLTM0LjU2LDQuNy00My40NC0zLjQ5LTguODgtOC4xOS0xMi40LTIzLjE4LTMuNTQtNDQuNDQsOC44NS0yMS4yNiwzMC4wOC00OC44LDUyLjQ3LTczLjA1LDI0LjEtMjYuMTEsNDguNTQtNTEuNzgsNzAuMDEtNjEuNzYsMTguNDItOC41NiwzNS4wMS0zLjk1LDQzLjIsMy42MSw3LjgzLDcuMjMsMTMuODUsMjEuOTgsNy42OCwzOS44NS03LjgxLDIyLjYzLTMxLjU5LDUwLjU1LTU2LjYxLDc3LjY0WiIvPgogIDwvZz4KPC9zdmc+" alt="IZI VIZI" style="height:70px;display:block;" />
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab active" onclick="showPage('todo')">Tâches de la semaine</button>
+  <button class="tab" onclick="showPage('next')">Semaine prochaine</button>
+  <button class="tab" onclick="showPage('crm')">CRM Prospection</button>
+  <button class="tab" onclick="showPage('kpi')">KPI Semaine</button>
+</div>
+
+<!-- ===== TODO PAGE ===== -->
+<div class="page active" id="page-todo">
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot dot-yellow"></div> 15 min</div>
+    <div class="legend-item"><div class="legend-dot dot-orange"></div> 30 min - 1h</div>
+    <div class="legend-item"><div class="legend-dot dot-turquoise"></div> 2h</div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-meta">
+      <span class="progress-pct" id="progressPct">0%</span>
+      <span class="progress-time" id="progressTime"></span>
+    </div>
+  </div>
+
+  <div style="height:1.25rem"></div>
+  <div class="reinforce-card">
+    <div class="reinforce-main" id="reinforceMain">Bonne semaine Marie !</div>
+    <div class="reinforce-detail" id="reinforceDetail">Aucune tâche complétée pour l'instant — let's go !</div>
+  </div>
+
+  <div id="urgentSummary" style="display:none;background:#FDECEA;border:1px solid #F5B7B1;border-radius:12px;padding:0.75rem 1.25rem;margin-bottom:1.25rem;display:none;align-items:center;gap:16px;">
+    <div style="font-size:18px;line-height:1;">🔴</div>
+    <div style="flex:1;">
+      <div style="font-size:13px;font-weight:500;color:#C0392B;" id="urgentCount">—</div>
+      <div style="font-size:12px;color:#E74C3C;margin-top:2px;" id="urgentTime">—</div>
+    </div>
+  </div>
+
+  <div class="target-card">
+    <div class="target-title">Objectif pour atteindre vendredi</div>
+    <div class="target-grid" id="targetGrid"></div>
+  </div>
+
+  <div class="status loading visible" id="status"><span class="spinner"></span> Chargement...</div>
+  <div id="todoMain"></div>
+
+  <div class="add-section-wrap">
+    <div class="add-section-row">
+      <input type="text" class="add-section-input" id="newSectionInput" placeholder="+ Nouveau client..." />
+      <button class="add-section-btn" onclick="addSection()">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEXT WEEK PAGE ===== -->
+<div class="page" id="page-next">
+  <div style="margin-bottom:1.25rem;">
+    <div style="font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:400;">Semaine prochaine</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:0.3rem;">Les tâches se débloquent automatiquement le lundi matin.</div>
+  </div>
+
+  <div class="next-week-progress" id="nextWeekProgress" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.6rem;">
+      <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);">Charge estimée</div>
+      <div style="font-size:13px;font-weight:500;color:var(--accent);" id="nextTotalTime">—</div>
+    </div>
+    <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;">Répartition sur 5 jours</div>
+    <div class="next-week-grid" id="nextWeekGrid"></div>
+  </div>
+
+  <div id="nextMain"></div>
+  <div class="add-section-wrap">
+    <div class="add-section-row">
+      <input type="text" class="add-section-input" id="newNextSectionInput" placeholder="+ Nouveau client pour la semaine prochaine..." />
+      <button class="add-section-btn" onclick="addNextSection()">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CRM PAGE ===== -->
+<div class="page" id="page-crm">
+  <div class="crm-header">
+    <h2>CRM Prospection</h2>
+    <p>Glisse tes prospects d'une étape à l'autre.</p>
+  </div>
+  <div class="kanban-board" id="kanbanBoard"></div>
+</div>
+
+<!-- KPI PAGE -->
+<div class="page" id="page-kpi">
+  <div style="margin-bottom:1.5rem;">
+    <div style="font-family:'DM Serif Display',serif;font-size:1.6rem;font-weight:400;">KPI Semaine</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:0.3rem;">Objectifs fixes + objectifs par client pour cette semaine.</div>
+  </div>
+  <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem;">Objectifs fixes</div>
+  <div class="kpi-card">
+    <div class="kpi-top">
+      <div class="kpi-label">Nouveaux prospects contactés</div>
+      <div class="kpi-value"><span id="kpiProspectsVal">0</span> / 3</div>
+    </div>
+    <div class="kpi-bar-bg"><div class="kpi-bar" id="kpiProspectsBar" style="background:var(--turquoise)"></div></div>
+    <div class="kpi-hint">Calculé automatiquement depuis le CRM</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-top">
+      <div class="kpi-label">Posts publiés cette semaine</div>
+      <div class="kpi-value"><span id="kpiPostsVal">0</span> / 4</div>
+    </div>
+    <div class="kpi-bar-bg"><div class="kpi-bar" id="kpiPostsBar" style="background:var(--orange)"></div></div>
+    <div class="kpi-counter-row">
+      <button class="kpi-count-btn" onclick="changePostCount(-1)">−</button>
+      <span style="font-size:12px;color:var(--muted);">Mettre à jour manuellement</span>
+      <button class="kpi-count-btn" onclick="changePostCount(1)">+</button>
+    </div>
+  </div>
+  <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 0.75rem;">Objectifs par client</div>
+  <div id="kpiClients"></div>
+
+  <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 0.75rem;">Heures travaillées cette semaine</div>
+  <div class="kpi-card">
+    <div class="kpi-top">
+      <div class="kpi-label">Temps total chronométré</div>
+      <div class="kpi-value" id="kpiWeekTime">0 min</div>
+    </div>
+    <div class="kpi-bar-bg"><div class="kpi-bar" id="kpiWeekBar" style="background:var(--accent)"></div></div>
+    <div class="kpi-hint">Basé sur les chronos démarrés sur chaque tâche</div>
+  </div>
+
+  <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 0.75rem;">Historique des semaines</div>
+  <div id="kpiHistory"><div style="font-size:13px;color:var(--muted);text-align:center;padding:1rem 0;">Aucun historique pour l'instant.</div></div>
+  <div style="font-size:11px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin:1.5rem 0 0.75rem;">Salaire net du mois</div>
+  <div class="kpi-card" id="salaryCard">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Clients CM ce mois (brut)</div>
+        <input type="number" id="salCM" value="850" min="0" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.6rem;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" oninput="updateSalary()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">La dame (net)</div>
+        <input type="number" id="salDame" value="300" min="0" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.6rem;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" oninput="updateSalary()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Subside (net/mois)</div>
+        <input type="number" id="salSubside" value="375" min="0" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.6rem;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" oninput="updateSalary()">
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Frais pro</div>
+        <input type="number" id="salFrais" value="222.74" min="0" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:0.4rem 0.6rem;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" oninput="updateSalary()">
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:13px;border-top:1px solid var(--border);padding-top:0.75rem;">
+      <div style="display:flex;justify-content:space-between;color:var(--muted);">
+        <span>CM brut - frais pro</span><span id="salBenefit">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);">
+        <span>Net CM (×0.725 après cot. sociales)</span><span id="salNetCM">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);">
+        <span>+ La dame (net)</span><span id="salDameDisplay">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);">
+        <span>+ Subside (net)</span><span id="salSubsideDisplay">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-weight:500;color:var(--text);font-size:15px;margin-top:4px;padding-top:6px;border-top:1px solid var(--border);">
+        <span>Total net dans ta poche</span><span id="salTotal" style="color:var(--accent);">—</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;color:var(--muted);margin-top:6px;">
+        <span>Charges perso (loyer + courses)</span><span>- 800€</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-weight:500;font-size:14px;margin-top:4px;padding-top:6px;border-top:1px solid var(--border);">
+        <span>Reste perso</span><span id="salPerso" style="color:var(--accent);">—</span>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Par rapport à tes seuils</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        <div id="seuil900" style="border-radius:8px;padding:0.5rem;text-align:center;font-size:11px;border:1px solid var(--border);">
+          <div style="font-weight:500;">Minimum vital</div><div>900€</div>
+        </div>
+        <div id="seuil1100" style="border-radius:8px;padding:0.5rem;text-align:center;font-size:11px;border:1px solid var(--border);">
+          <div style="font-weight:500;">Confort</div><div>1100€</div>
+        </div>
+        <div id="seuil2000" style="border-radius:8px;padding:0.5rem;text-align:center;font-size:11px;border:1px solid var(--border);">
+          <div style="font-weight:500;">Rêve</div><div>2000€</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px;">Formation Devenir CM (975€/mois) — après formation + charges perso (800€) :</div>
+      <div id="salFormation" style="font-size:13px;font-weight:500;padding:0.5rem 0.75rem;border-radius:8px;background:var(--bg);">—</div>
+    </div>
+  </div>
+
+  <div class="kpi-add-client-row">
+    <input type="text" class="add-section-input" id="kpiNewClient" placeholder="+ Ajouter un client..." />
+    <button class="add-section-btn" onclick="addKpiClient()">+</button>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h3>Modifier le prospect</h3>
+    <input type="text" id="modalName" placeholder="Nom / Entreprise" />
+    <input type="tel" id="modalPhone" placeholder="Téléphone" />
+    <input type="email" id="modalEmail" placeholder="Email" />
+    <textarea id="modalNotes" placeholder="Notes..."></textarea>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal()">Annuler</button>
+      <button class="modal-save" onclick="saveModal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<footer>Synchronisé automatiquement — accessible depuis n'importe quel appareil.</footer>
+
+<script>
+const BIN_ID = '69cd151a36566621a86c449d';
+const API_KEY = '$2a$10$eV5JT8HcfSZGlHJyr0HvTediutQvCQxouF6Hz1WrYcEFK5JlYsuWC';
+const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+const WEIGHTS = { yellow: 1, orange: 4, turquoise: 8 };
+const COLORS = ['yellow', 'orange', 'turquoise'];
+const DAY_NAMES = ['Lun', 'Mar', 'Jeu', 'Ven'];
+const MIN_MAP = { yellow: 15, orange: 45, turquoise: 120 };
+
+const CRM_COLS = [
+  { id: 'lead', label: 'Lead identifié', cls: 'col-lead' },
+  { id: 'contact', label: 'Contacté', cls: 'col-contact' },
+  { id: 'discussion', label: 'En discussion', cls: 'col-discussion' },
+  { id: 'offre', label: 'Offre envoyée', cls: 'col-offre' },
+  { id: 'relance', label: 'Relancé', cls: 'col-relance' },
+  { id: 'rdv', label: 'RDV / Appel', cls: 'col-rdv' },
+  { id: 'client', label: 'Client', cls: 'col-client' },
+  { id: 'perdu', label: 'Pas client', cls: 'col-perdu' }
+];
+
+const DEFAULT_STORE = {
+  sections: [
+    { section: "Hair Service", groups: [{ title: "Cette semaine", tasks: [
+      { text: "Créer events FB", color: "orange", done: false },
+      { text: "Vidéo Claudine", color: "turquoise", done: false },
+      { text: "Shooting shampooings", color: "turquoise", done: false }
+    ]}]},
+    { section: "Xavier", groups: [{ title: "Cette semaine", tasks: [
+      { text: "Post 1", color: "orange", done: false },
+      { text: "Post 2", color: "orange", done: false },
+      { text: "Post 3", color: "orange", done: false },
+      { text: "Post 4", color: "orange", done: false }
+    ]}]},
+    { section: "Vincent", groups: [{ title: "Cette semaine", tasks: [
+      { text: "Post 1", color: "orange", done: false },
+      { text: "Post 2", color: "orange", done: false }
+    ]}]}
+  ],
+  nextSections: [],
+  crm: { lead: [], contact: [], discussion: [], offre: [], relance: [], rdv: [], client: [], perdu: [] },
+  kpi: { posts: 0, clients: [], frais: 222.74, weekSeconds: 0, weekTasks: 0, lastWeek: '', history: [], cmClients: [{name:'Xavier',amount:150},{name:'Vincent',amount:200},{name:'Marie Henry',amount:250},{name:'Hair Service',amount:450}] }
+};
+
+let store = { sections: [], nextSections: [], crm: { contact: [], offre: [], rdv: [], client: [], perdu: [] } };
+let saveTimeout = null;
+let dragCard = null, dragColId = null, dragCardIdx = null;
+let editingProspect = null;
+
+// ===== TABS =====
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ===== STATUS =====
+function showStatus(type, msg) {
+  const el = document.getElementById('status');
+  el.className = `status ${type} visible`;
+  el.innerHTML = type === 'saving' ? `<span class="spinner"></span> ${msg}` : msg;
+}
+function hideStatus() { setTimeout(() => document.getElementById('status').classList.remove('visible'), 2000); }
+
+// ===== LOAD / SAVE =====
+async function loadData() {
+  try {
+    const res = await fetch(API_URL + '/latest', { headers: { 'X-Master-Key': API_KEY } });
+    const json = await res.json();
+    const r = json.record;
+    if (r && r.sections && r.sections.length > 0) {
+      store.sections = r.sections;
+      store.nextSections = r.nextSections || [];
+      store.crm = r.crm || { lead: [], contact: [], discussion: [], offre: [], relance: [], rdv: [], client: [], perdu: [] };
+      store.kpi = r.kpi || { posts: 0, clients: [], frais: 222.74, weekSeconds: 0, weekTasks: 0, lastWeek: '', history: [], cmClients: [{name:'Xavier',amount:150},{name:'Vincent',amount:200},{name:'Marie Henry',amount:250},{name:'Hair Service',amount:450}] };
+      if (!store.kpi.cmClients) store.kpi.cmClients = [{name:'Xavier',amount:150},{name:'Vincent',amount:200},{name:'Marie Henry',amount:250},{name:'Hair Service',amount:450}];
+    } else {
+      store = JSON.parse(JSON.stringify(DEFAULT_STORE));
+      await saveData(true);
+    }
+  } catch(e) {
+    store = JSON.parse(JSON.stringify(DEFAULT_STORE));
+    showStatus('error', 'Erreur de chargement — mode hors ligne.');
+  }
+  checkMondayUnlock();
+  renderAll();
+}
+
+async function saveData(silent = false) {
+  if (!silent) showStatus('saving', 'Sauvegarde...');
+  try {
+    await fetch(API_URL, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+      body: JSON.stringify({ sections: store.sections, nextSections: store.nextSections, crm: store.crm, kpi: store.kpi })
+    });
+    if (!silent) { showStatus('saved', '✓ Sauvegardé'); hideStatus(); }
+  } catch(e) {
+    if (!silent) showStatus('error', 'Erreur de sauvegarde.'); }
+}
+
+function scheduleSave() { clearTimeout(saveTimeout); saveTimeout = setTimeout(() => saveData(), 800); }
+
+// ===== MONDAY UNLOCK =====
+function checkMondayUnlock() {
+  const now = new Date();
+  if (now.getDay() === 1 && store.nextSections && store.nextSections.length > 0) {
+    const lastUnlock = store.lastUnlock || '';
+    const todayStr = now.toISOString().slice(0, 10);
+    if (lastUnlock !== todayStr) {
+      store.nextSections.forEach(ns => {
+        const existing = store.sections.find(s => s.section === ns.section);
+        if (existing) {
+          ns.groups.forEach(g => existing.groups.push(g));
+        } else {
+          store.sections.push(JSON.parse(JSON.stringify(ns)));
+        }
+      });
+      store.nextSections = [];
+      store.lastUnlock = todayStr;
+    }
+  }
+}
+
+// ===== HELPERS =====
+function getAllTasks() {
+  const tasks = [];
+  store.sections.forEach(s => s.groups.forEach(g => g.tasks.forEach(t => tasks.push(t))));
+  return tasks;
+}
+
+function getStats() {
+  const tasks = getAllTasks();
+  let totalWeight = 0, doneWeight = 0;
+  let doneByColor = { yellow: 0, orange: 0, turquoise: 0 };
+  let doneMinutes = 0, totalMinutes = 0;
+  tasks.forEach(t => {
+    const w = WEIGHTS[t.color] || 1;
+    const m = MIN_MAP[t.color] || 15;
+    totalWeight += w; totalMinutes += m;
+    if (t.color) { if (!doneByColor[t.color]) doneByColor[t.color] = 0; }
+    if (t.done) { doneWeight += w; doneMinutes += m; if (t.color) doneByColor[t.color]++; }
+  });
+  return { totalWeight, doneWeight, doneByColor, doneMinutes, totalMinutes };
+}
+
+function formatMinutes(min) {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60), m = min % 60;
+  return m > 0 ? `${h}h${m < 10 ? '0' : ''}${m}` : `${h}h`;
+}
+
+function getTodayIdx() {
+  const d = new Date().getDay();
+  // 1=Mon->0, 2=Tue->1, 3=Wed->skip(-1), 4=Thu->2, 5=Fri->3
+  if (d === 1) return 0;
+  if (d === 2) return 1;
+  if (d === 4) return 2;
+  if (d === 5) return 3;
+  return -1;
+}
+
+// ===== RENDER ALL =====
+function renderAll() {
+  renderTodo();
+  renderNextWeek();
+  renderKanban();
+  renderKpi();
+  document.getElementById('status').classList.remove('visible');
+  setTimeout(updateSalary, 100);
+}
+
+// ===== STATS / PROGRESS =====
+function updateStats() {
+  const { totalWeight, doneWeight, doneByColor, doneMinutes, totalMinutes } = getStats();
+  const pct = totalWeight === 0 ? 0 : Math.round(doneWeight / totalWeight * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+  document.getElementById('progressTime').textContent = `${formatMinutes(doneMinutes)} / ${formatMinutes(totalMinutes)}`;
+
+  // Urgent summary
+  let urgentCount = 0, urgentMin = 0;
+  store.sections.forEach(s => s.groups.forEach(g => g.tasks.forEach(t => {
+    if (t.urgent && !t.done) { urgentCount++; urgentMin += MIN_MAP[t.color] || 15; }
+  })));
+  const urgentBox = document.getElementById('urgentSummary');
+  if (urgentBox) {
+    if (urgentCount > 0) {
+      urgentBox.style.display = 'flex';
+      document.getElementById('urgentCount').textContent = urgentCount + ' tâche' + (urgentCount > 1 ? 's urgentes' : ' urgente');
+      document.getElementById('urgentTime').textContent = formatMinutes(urgentMin) + ' estimées';
+    } else {
+      urgentBox.style.display = 'none';
+    }
+  }
+
+  const totalDone = (doneByColor.yellow||0) + (doneByColor.orange||0) + (doneByColor.turquoise||0);
+  const msgs = ['Bonne semaine Marie !', 'Bien joué, continue !', 'Super boulot !', 'En route pour vendredi !', 'Presque là !'];
+  document.getElementById('reinforceMain').textContent = totalDone === 0 ? 'Bonne semaine Marie !' : msgs[Math.min(Math.floor(pct / 25), msgs.length - 1)];
+
+  if (totalDone === 0) {
+    document.getElementById('reinforceDetail').textContent = "Aucune tâche complétée pour l'instant — let's go !";
+  } else {
+    let parts = [];
+    if (doneByColor.yellow > 0) parts.push(`<span><span class="dot-inline" style="background:var(--yellow)"></span>${doneByColor.yellow} petite${doneByColor.yellow > 1 ? 's' : ''}</span>`);
+    if (doneByColor.orange > 0) parts.push(`<span><span class="dot-inline" style="background:var(--orange)"></span>${doneByColor.orange} moyenne${doneByColor.orange > 1 ? 's' : ''}</span>`);
+    if (doneByColor.turquoise > 0) parts.push(`<span><span class="dot-inline" style="background:var(--turquoise)"></span>${doneByColor.turquoise} grande${doneByColor.turquoise > 1 ? 's' : ''}</span>`);
+    document.getElementById('reinforceDetail').innerHTML = `${totalDone} tâche${totalDone > 1 ? 's' : ''} complétée${totalDone > 1 ? 's' : ''} aujourd'hui : ${parts.join(', ')}`;
+  }
+
+  // Target grid
+  const todayIdx = getTodayIdx();
+  const pendingTasks = getAllTasks().filter(t => !t.done);
+  const daysLeft = todayIdx >= 0 ? 4 - todayIdx : 4;
+  const grid = document.getElementById('targetGrid');
+  grid.innerHTML = '';
+
+  DAY_NAMES.forEach((name, i) => {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'target-day' + (i === todayIdx ? ' today' : '') + (i < todayIdx ? ' past' : '');
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'target-day-name';
+    nameEl.textContent = name;
+    dayEl.appendChild(nameEl);
+
+    const dotsEl = document.createElement('div');
+    dotsEl.className = 'target-dots'; dotsEl.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;gap:0;min-height:20px;width:100%;';
+
+    let dayTimeMin = 0;
+
+    if (i < todayIdx) {
+      const empty = document.createElement('span');
+      empty.className = 'target-empty';
+      empty.textContent = '-';
+      dotsEl.appendChild(empty);
+    } else if (pendingTasks.length === 0) {
+      const empty = document.createElement('span');
+      empty.className = 'target-empty';
+      empty.textContent = pct >= 100 ? '✓' : '-';
+      dotsEl.appendChild(empty);
+    } else {
+      // Distribute tasks to equalise hours per day (bin-packing greedy)
+      const startIdx2 = Math.max(todayIdx, 0);
+      const dayOffset = i - startIdx2;
+      if (dayOffset === 0) {
+        // Build the assignment once and cache on window
+        const totalMin = pendingTasks.reduce((acc, t) => acc + (MIN_MAP[t.color] || 15), 0);
+        const target = totalMin / daysLeft;
+        // Sort by duration desc for better packing
+        const sorted = [...pendingTasks].sort((a, b) => (MIN_MAP[b.color]||15) - (MIN_MAP[a.color]||15));
+        const days = Array.from({length: daysLeft}, () => ({ tasks: [], min: 0 }));
+        sorted.forEach(t => {
+          // Put in the day with fewest minutes so far
+          const lightest = days.reduce((best, d, idx) => d.min < days[best].min ? idx : best, 0);
+          days[lightest].tasks.push(t);
+          days[lightest].min += MIN_MAP[t.color] || 15;
+        });
+        window._dayAssignment = days.map(d => d.tasks);
+      }
+      const dayTasks = (window._dayAssignment && window._dayAssignment[dayOffset]) || [];
+      if (dayTasks.length === 0) {
+        const empty = document.createElement('span');
+        empty.className = 'target-empty';
+        empty.textContent = pct >= 100 ? '✓' : '-';
+        dotsEl.appendChild(empty);
+      } else {
+        // Build all tasks for this day (done + pending) to show full picture
+        // For today: show done tasks as checked, pending as unchecked
+        // For future days: show all pending
+        const allDayTasks = [...dayTasks];
+        // Also include done tasks assigned to this day slot for today
+        if (i === todayIdx) {
+          const doneTasks = getAllTasks().filter(t => t.done);
+          allDayTasks.push(...doneTasks);
+        }
+        const clrs = { yellow: 'var(--yellow)', orange: 'var(--orange)', turquoise: 'var(--turquoise)' };
+        const bgs = { yellow: 'var(--yellow-bg)', orange: 'var(--orange-bg)', turquoise: 'var(--turquoise-bg)' };
+        const labels = { turquoise: 'grande', orange: 'moyenne', yellow: 'petite' };
+
+        // Group by color and done status
+        const groups = {};
+        allDayTasks.forEach(t => {
+          const c = t.color || 'orange';
+          if (!groups[c]) groups[c] = { done: 0, pending: 0 };
+          if (t.done) groups[c].done++; else groups[c].pending++;
+          if (!t.done) dayTimeMin += MIN_MAP[c] || 15;
+        });
+
+        ['turquoise','orange','yellow'].forEach(c => {
+          if (!groups[c]) return;
+          const { done, pending } = groups[c];
+          const total = done + pending;
+          const pill = document.createElement('div');
+          pill.style.cssText = `display:flex;align-items:center;gap:5px;background:${done===total && total>0 ? 'var(--bg)' : bgs[c]};border-radius:6px;padding:3px 7px;margin-bottom:3px;transition:background 0.3s;width:100%;`;
+          const dot = document.createElement('div');
+          dot.style.cssText = `width:7px;height:7px;border-radius:50%;background:${clrs[c]};flex-shrink:0;${done===total && total>0 ? 'opacity:0.4;' : ''}`;
+          const lbl = document.createElement('span');
+          lbl.style.cssText = `font-size:10px;color:var(--text);line-height:1.3;white-space:nowrap;flex:1;${done===total && total>0 ? 'opacity:0.4;text-decoration:line-through;' : ''}`;
+          lbl.textContent = total + ' ' + labels[c] + (total > 1 ? 's' : '');
+          pill.appendChild(dot); pill.appendChild(lbl);
+          // Checkboxes: one per task, filled if done
+          for (let k = 0; k < total; k++) {
+            const box = document.createElement('div');
+            const isDone = k < done;
+            box.style.cssText = `width:12px;height:12px;border-radius:3px;flex-shrink:0;border:1.5px solid ${isDone ? 'var(--accent)' : 'var(--border)'};background:${isDone ? 'var(--accent)' : 'transparent'};display:flex;align-items:center;justify-content:center;`;
+            if (isDone) {
+              box.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 4l2 2 4-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            }
+            pill.appendChild(box);
+          }
+          dotsEl.appendChild(pill);
+        });
+      }
+    }
+
+    dayEl.appendChild(dotsEl);
+
+    if (i >= Math.max(todayIdx, 0) && dayTimeMin > 0) {
+      const timeEl = document.createElement('div');
+      timeEl.className = 'target-time';
+      timeEl.textContent = formatMinutes(dayTimeMin);
+      dayEl.appendChild(timeEl);
+
+      // per-day progress bar — only meaningful for today
+      if (i === todayIdx) {
+        const allTasks = getAllTasks();
+        const todayDoneMin = allTasks.filter(t => t.done).reduce((a, t) => a + (MIN_MAP[t.color]||15), 0);
+        const todayTotalMin = allTasks.reduce((a, t) => a + (MIN_MAP[t.color]||15), 0);
+        const todayTarget = Math.round(todayTotalMin / daysLeft);
+        const remainingMin = Math.max(0, todayTarget - todayDoneMin);
+        const dayPct = todayTarget > 0 ? Math.min(Math.round(todayDoneMin / todayTarget * 100), 100) : 0;
+
+        const progWrap = document.createElement('div');
+        progWrap.className = 'target-day-progress';
+        const progBar = document.createElement('div');
+        progBar.className = 'target-day-progress-bar';
+        progBar.style.width = dayPct + '%';
+        progBar.style.background = dayPct >= 100 ? '#4A7C59' : 'var(--accent)';
+        progWrap.appendChild(progBar);
+        dayEl.appendChild(progWrap);
+
+        // Remaining time label
+        const remainEl = document.createElement('div');
+        remainEl.className = 'target-time';
+        remainEl.style.marginTop = '3px';
+        if (dayPct >= 100) {
+          remainEl.textContent = 'Objectif atteint ✓';
+          remainEl.style.color = '#4A7C59';
+        } else {
+          remainEl.textContent = 'reste ' + formatMinutes(remainingMin);
+          remainEl.style.color = 'var(--accent)';
+          remainEl.style.fontWeight = '500';
+        }
+        dayEl.appendChild(remainEl);
+      }
+    }
+
+    grid.appendChild(dayEl);
+  });
+}
+
+// ===== RENDER TODO =====
+function renderTodo() {
+  const main = document.getElementById('todoMain');
+  main.innerHTML = '';
+
+  store.sections.forEach((section, si) => {
+    const secEl = document.createElement('div');
+    secEl.className = 'section';
+    const secHeader = document.createElement('div');
+    secHeader.className = 'section-header';
+    const secLabel = document.createElement('div');
+    secLabel.className = 'section-label';
+    // Calculate total time for this section
+    let secTotalMin = 0, secDoneMin = 0;
+    section.groups.forEach(g => g.tasks.forEach(t => {
+      const m = MIN_MAP[t.color] || 15;
+      secTotalMin += m;
+      if (t.done) secDoneMin += m;
+    }));
+    const secTimeLeft = secTotalMin - secDoneMin;
+    secLabel.textContent = section.section;
+    if (secTotalMin > 0) {
+      const timeSpan = document.createElement('span');
+      timeSpan.style.cssText = 'font-size:10px;font-weight:400;color:var(--muted);margin-left:8px;text-transform:none;letter-spacing:0;';
+      timeSpan.textContent = secTimeLeft > 0 ? formatMinutes(secTimeLeft) + ' restantes' : '✓ terminé';
+      secLabel.appendChild(timeSpan);
+    }
+    const secDel = document.createElement('button');
+    secDel.className = 'section-delete-btn';
+    secDel.textContent = '×';
+    secDel.onclick = () => { if (confirm(`Supprimer "${section.section}" ?`)) { store.sections.splice(si, 1); renderTodo(); updateStats(); scheduleSave(); } };
+    secHeader.appendChild(secLabel);
+    secHeader.appendChild(secDel);
+    secEl.appendChild(secHeader);
+
+    section.groups.forEach((group, gi) => {
+      const groupEl = buildGroup(group, si, gi);
+      secEl.appendChild(groupEl);
+    });
+
+    const addGroupRow = buildAddGroupRow(si);
+    secEl.appendChild(addGroupRow);
+    main.appendChild(secEl);
+  });
+
+  updateStats();
+}
+
+function buildGroup(group, si, gi) {
+  const groupEl = document.createElement('div');
+  groupEl.className = 'group';
+  const groupHeader = document.createElement('div');
+  groupHeader.className = 'group-header';
+  const groupTitle = document.createElement('div');
+  groupTitle.className = 'group-title';
+  groupTitle.textContent = group.title;
+  const groupDel = document.createElement('button');
+  groupDel.className = 'group-delete-btn';
+  groupDel.textContent = '×';
+  groupDel.onclick = () => { if (confirm(`Supprimer "${group.title}" ?`)) { store.sections[si].groups.splice(gi, 1); renderTodo(); updateStats(); scheduleSave(); } };
+  groupHeader.appendChild(groupTitle);
+  groupHeader.appendChild(groupDel);
+  groupEl.appendChild(groupHeader);
+  // Only render pending tasks
+  group.tasks.forEach((task, ti) => {
+    if (!task.done) groupEl.appendChild(makeTaskRow(task, si, gi, ti));
+  });
+
+  // Done accordion
+  const doneTasks = group.tasks.map((t, ti) => ({t, ti})).filter(({t}) => t.done);
+  if (doneTasks.length > 0) {
+    const toggleKey = `done-${si}-${gi}`;
+    const isOpen = window._doneOpen && window._doneOpen[toggleKey];
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'done-toggle' + (isOpen ? ' open' : '');
+    toggleBtn.innerHTML = `<span class="done-toggle-arrow">&#9658;</span>&nbsp;${doneTasks.length} tâche${doneTasks.length > 1 ? 's' : ''} faite${doneTasks.length > 1 ? 's' : ''}`;
+    const doneList = document.createElement('div');
+    doneList.className = 'done-list' + (isOpen ? ' open' : '');
+    toggleBtn.onclick = () => {
+      if (!window._doneOpen) window._doneOpen = {};
+      window._doneOpen[toggleKey] = !window._doneOpen[toggleKey];
+      toggleBtn.classList.toggle('open');
+      doneList.classList.toggle('open');
+    };
+    doneTasks.forEach(({t, ti}) => {
+      const row = document.createElement('div');
+      row.className = 'done-task-item';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = true;
+      cb.style.cssText = 'appearance:none;width:16px;height:16px;border:1.5px solid var(--accent);border-radius:4px;flex-shrink:0;cursor:pointer;background:var(--accent);position:relative;';
+      cb.addEventListener('change', () => { store.sections[si].groups[gi].tasks[ti].done = false; renderTodo(); updateStats(); scheduleSave(); });
+      const dot = document.createElement('div');
+      dot.style.cssText = `width:8px;height:8px;border-radius:50%;flex-shrink:0;background:${t.color==='yellow'?'var(--yellow)':t.color==='orange'?'var(--orange)':'var(--turquoise)'}`;
+      const txt = document.createElement('span'); txt.className = 'done-task-text'; txt.textContent = t.text;
+      const restoreBtn = document.createElement('button'); restoreBtn.className = 'done-restore-btn'; restoreBtn.textContent = '↩'; restoreBtn.title = 'Remettre en cours';
+      restoreBtn.onclick = () => { store.sections[si].groups[gi].tasks[ti].done = false; renderTodo(); updateStats(); scheduleSave(); };
+      row.appendChild(cb); row.appendChild(dot); row.appendChild(txt); row.appendChild(restoreBtn);
+      doneList.appendChild(row);
+    });
+    groupEl.appendChild(toggleBtn);
+    groupEl.appendChild(doneList);
+  }
+
+  // drag & drop between groups of same client
+  groupEl.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (window._taskDrag && window._taskDrag.si === si) groupEl.classList.add('drag-over-group');
+  });
+  groupEl.addEventListener('dragleave', e => {
+    if (!groupEl.contains(e.relatedTarget)) groupEl.classList.remove('drag-over-group');
+  });
+  groupEl.addEventListener('drop', e => {
+    e.preventDefault();
+    groupEl.classList.remove('drag-over-group');
+    const d = window._taskDrag;
+    if (!d || d.si !== si || d.gi === gi) return;
+    const task = store.sections[d.si].groups[d.gi].tasks.splice(d.ti, 1)[0];
+    store.sections[si].groups[gi].tasks.push(task);
+    window._taskDrag = null;
+    renderTodo(); scheduleSave();
+  });
+
+  groupEl.appendChild(buildAddTaskRow(si, gi));
+  return groupEl;
+}
+
+function buildAddTaskRow(si, gi) {
+  const addRow = document.createElement('div');
+  addRow.className = 'add-task-row';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'add-task-input'; inp.placeholder = 'Ajouter une tâche...';
+  let sel = 'orange';
+  const picker = document.createElement('div');
+  picker.className = 'add-color-picker';
+  COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = `add-color-dot cd-${c}${c === sel ? ' selected' : ''}`;
+    dot.onclick = () => { sel = c; picker.querySelectorAll('.add-color-dot').forEach(d => d.classList.remove('selected')); dot.classList.add('selected'); };
+    picker.appendChild(dot);
+  });
+  const btn = document.createElement('button');
+  btn.className = 'add-task-btn'; btn.textContent = '+';
+  const doAdd = () => { if (inp.value.trim()) { store.sections[si].groups[gi].tasks.push({ text: inp.value.trim(), color: sel, done: false }); inp.value = ''; renderTodo(); scheduleSave(); } else inp.focus(); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  btn.onclick = doAdd;
+  addRow.appendChild(inp); addRow.appendChild(picker); addRow.appendChild(btn);
+  return addRow;
+}
+
+function buildAddGroupRow(si) {
+  const row = document.createElement('div');
+  row.className = 'add-group-row';
+  const inp = document.createElement('input');
+  inp.type = 'text'; inp.className = 'add-group-input'; inp.placeholder = '+ Nouveau groupe...';
+  const btn = document.createElement('button');
+  btn.className = 'add-group-btn'; btn.textContent = '+';
+  const doAdd = () => { if (inp.value.trim()) { store.sections[si].groups.push({ title: inp.value.trim(), tasks: [] }); inp.value = ''; renderTodo(); scheduleSave(); } else inp.focus(); };
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+  btn.onclick = doAdd;
+  row.appendChild(inp); row.appendChild(btn);
+  return row;
+}
+
+function fmtTimer(s) {
+  const sec = Math.floor(s % 60), min = Math.floor((s/60)%60), hr = Math.floor(s/3600);
+  return hr > 0 ? `${hr}:${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${min}:${String(sec).padStart(2,'0')}`;
+}
+
+function makeTaskRow(task, si, gi, ti) {
+  const row = document.createElement('div');
+  row.className = `task-item ${task.color || ''}`;
+  row.draggable = true;
+  row.dataset.si = si; row.dataset.gi = gi; row.dataset.ti = ti;
+
+  // drag events
+  row.addEventListener('dragstart', e => {
+    window._taskDrag = { si, gi, ti };
+    setTimeout(() => row.classList.add('dragging'), 0);
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  row.addEventListener('dragend', () => { row.classList.remove('dragging'); window._taskDrag = null; });
+
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = task.done;
+  cb.addEventListener('change', () => { store.sections[si].groups[gi].tasks[ti].done = cb.checked; updateStats(); scheduleSave(); });
+
+  // label with double-click edit
+  // urgent button
+  const urgentBtn = document.createElement('button');
+  urgentBtn.className = 'urgent-btn' + (task.urgent ? ' active' : '');
+  urgentBtn.title = 'Marquer urgent';
+  urgentBtn.textContent = '🔴';
+  urgentBtn.onclick = () => {
+    store.sections[si].groups[gi].tasks[ti].urgent = !task.urgent;
+    scheduleSave(); renderTodo();
+  };
+  if (task.urgent) {
+    row.classList.add('urgent');
+    const badge = document.createElement('span');
+    badge.className = 'urgent-badge visible';
+    badge.textContent = 'urgent';
+    row.appendChild(urgentBtn);
+    row.appendChild(badge);
+  } else {
+    row.appendChild(urgentBtn);
+  }
+
+  const label = document.createElement('span');
+  label.className = 'task-text'; label.textContent = task.text;
+  label.addEventListener('dblclick', () => {
+    const inp = document.createElement('input');
+    inp.type = 'text'; inp.className = 'task-edit-input'; inp.value = task.text;
+    label.replaceWith(inp); inp.focus(); inp.select();
+    const save = () => {
+      const v = inp.value.trim();
+      if (v) store.sections[si].groups[gi].tasks[ti].text = v;
+      scheduleSave(); renderTodo();
+    };
+    inp.addEventListener('blur', save);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); if (e.key === 'Escape') { inp.value = task.text; inp.blur(); } });
+  });
+
+  const picker = document.createElement('div');
+  picker.className = 'color-picker';
+  COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = `color-dot cd-${c}${(task.color||'') === c ? ' active' : ''}`;
+    dot.onclick = () => { store.sections[si].groups[gi].tasks[ti].color = c; scheduleSave(); renderTodo(); };
+    picker.appendChild(dot);
+  });
+
+  // report to next week button
+  const reportCount = task.reportCount || 0;
+  const isBlocked = reportCount >= 2;
+
+  const reportCountBadge = document.createElement('span');
+  reportCountBadge.className = 'report-count' + (reportCount > 0 ? ' visible' : '') + (isBlocked ? ' blocked' : '');
+  reportCountBadge.title = isBlocked ? 'Tu ne peux plus reporter cette tâche !' : `Reportée ${reportCount} fois`;
+  reportCountBadge.textContent = isBlocked ? '🚫 max' : `↩ ${reportCount}x`;
+
+  const reportBtn = document.createElement('button');
+  reportBtn.className = 'report-btn' + (isBlocked ? ' disabled' : '');
+  reportBtn.title = isBlocked ? 'Tu ne peux plus reporter cette tâche — fais-la !' : 'Reporter à la semaine prochaine';
+  reportBtn.innerHTML = '→ sem. pro';
+  reportBtn.onclick = () => {
+    if (isBlocked) {
+      alert('Cette tâche a déjà été reportée 2 fois. Il est temps de s\'y mettre ! 💪');
+      return;
+    }
+    const t = store.sections[si].groups[gi].tasks.splice(ti, 1)[0];
+    t.done = false; t.elapsed = 0;
+    t.reportCount = (t.reportCount || 0) + 1;
+    if (t.reportCount >= 2) t.urgent = true; // auto-urgent after 2 reports
+    let ns = store.nextSections.find(s => s.section === store.sections[si].section);
+    if (!ns) { ns = { section: store.sections[si].section, groups: [] }; store.nextSections.push(ns); }
+    let ng = ns.groups.find(g => g.title === store.sections[si].groups[gi].title);
+    if (!ng) { ng = { title: store.sections[si].groups[gi].title, tasks: [] }; ns.groups.push(ng); }
+    ng.tasks.push(t);
+    renderTodo(); renderNextWeek(); updateStats(); scheduleSave();
+  };
+
+  // --- TIMER ---
+  const taskKey = `${si}-${gi}-${ti}`;
+  if (!window._timers) window._timers = {};
+  if (!window._timers[taskKey]) window._timers[taskKey] = { running: false, elapsed: task.elapsed || 0, interval: null };
+  const timer = window._timers[taskKey];
+  timer.elapsed = task.elapsed || 0;
+
+  const timerDisplay = document.createElement('span');
+  timerDisplay.className = 'timer-display';
+  if (timer.running) timerDisplay.classList.add('running');
+  timerDisplay.textContent = timer.elapsed > 0 ? fmtTimer(timer.elapsed) : '';
+  if (timer.elapsed > 0) timerDisplay.classList.add('has-time');
+
+  const timerBtn = document.createElement('button');
+  timerBtn.className = 'timer-btn' + (timer.running ? ' running' : '');
+  timerBtn.innerHTML = timer.running
+    ? '<svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><rect x="0" y="0" width="3.5" height="12" rx="1"/><rect x="6.5" y="0" width="3.5" height="12" rx="1"/></svg>'
+    : '<svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0 L10 6 L0 12 Z"/></svg>';
+  timerBtn.title = 'Chrono';
+  timerBtn.onclick = () => {
+    if (timer.running) {
+      clearInterval(timer.interval);
+      timer.running = false;
+      timerBtn.innerHTML = '<svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><path d="M0 0 L10 6 L0 12 Z"/></svg>';
+      timerBtn.classList.remove('running');
+      timerDisplay.classList.remove('running');
+      store.sections[si].groups[gi].tasks[ti].elapsed = timer.elapsed;
+      scheduleSave(); renderKpi();
+    } else {
+      Object.keys(window._timers).forEach(k => {
+        if (k !== taskKey && window._timers[k] && window._timers[k].running) {
+          clearInterval(window._timers[k].interval);
+          window._timers[k].running = false;
+        }
+      });
+      timer.running = true;
+      timerBtn.innerHTML = '<svg width="10" height="12" viewBox="0 0 10 12" fill="currentColor"><rect x="0" y="0" width="3.5" height="12" rx="1"/><rect x="6.5" y="0" width="3.5" height="12" rx="1"/></svg>';
+      timerBtn.classList.add('running');
+      timerDisplay.classList.add('running');
+      timer.interval = setInterval(() => {
+        timer.elapsed++;
+        store.sections[si].groups[gi].tasks[ti].elapsed = timer.elapsed;
+        timerDisplay.textContent = timer.elapsed > 0 ? fmtTimer(timer.elapsed) : '';
+        if (timer.elapsed > 0) timerDisplay.classList.add('has-time');
+        if (timer.elapsed % 30 === 0) { scheduleSave(); renderKpi(); }
+      }, 1000);
+    }
+  };
+  // --- END TIMER ---
+
+  const del = document.createElement('button');
+  del.className = 'delete-btn'; del.textContent = '×';
+  del.onclick = () => {
+    if (window._timers && window._timers[taskKey]) clearInterval(window._timers[taskKey].interval);
+    store.sections[si].groups[gi].tasks.splice(ti, 1); renderTodo(); updateStats(); scheduleSave();
+  };
+  row.insertBefore(cb, row.firstChild);
+  row.appendChild(label); row.appendChild(picker);
+  row.appendChild(reportCountBadge); row.appendChild(reportBtn); row.appendChild(timerBtn); row.appendChild(timerDisplay); row.appendChild(del);
+  return row;
+}
+
+function addSection() {
+  const inp = document.getElementById('newSectionInput');
+  if (!inp.value.trim()) { inp.focus(); return; }
+  store.sections.push({ section: inp.value.trim(), groups: [] });
+  inp.value = ''; renderTodo(); scheduleSave();
+}
+document.getElementById('newSectionInput').addEventListener('keydown', e => { if (e.key === 'Enter') addSection(); });
+
+// ===== NEXT WEEK =====
+function renderNextWeek() {
+  const main = document.getElementById('nextMain');
+  main.innerHTML = '';
+
+  // Compute total time & distribution for next week
+  const allNextTasks = [];
+  store.nextSections.forEach(s => s.groups.forEach(g => g.tasks.forEach(t => allNextTasks.push(t))));
+  const progressWrap = document.getElementById('nextWeekProgress');
+  if (allNextTasks.length > 0 && progressWrap) {
+    progressWrap.style.display = '';
+    const totalMin = allNextTasks.reduce((a, t) => a + (MIN_MAP[t.color] || 15), 0);
+    document.getElementById('nextTotalTime').textContent = formatMinutes(totalMin) + ' au total';
+
+    // distribute by time (same algo as this week)
+    const sorted = [...allNextTasks].sort((a, b) => (MIN_MAP[b.color]||15) - (MIN_MAP[a.color]||15));
+    const days = Array.from({length: 4}, () => ({ tasks: [], min: 0 }));
+    sorted.forEach(t => {
+      const lightest = days.reduce((best, d, idx) => d.min < days[best].min ? idx : best, 0);
+      days[lightest].tasks.push(t);
+      days[lightest].min += MIN_MAP[t.color] || 15;
+    });
+
+    const grid = document.getElementById('nextWeekGrid');
+    grid.innerHTML = '';
+    const DAY_N = ['Lun', 'Mar', 'Jeu', 'Ven'];
+    days.forEach((day, i) => {
+      const dayEl = document.createElement('div');
+      dayEl.className = 'target-day';
+      dayEl.style.opacity = '0.85';
+      const nameEl = document.createElement('div');
+      nameEl.className = 'target-day-name';
+      nameEl.textContent = DAY_N[i];
+      dayEl.appendChild(nameEl);
+      const dotsEl = document.createElement('div');
+      dotsEl.className = 'target-dots'; dotsEl.style.cssText = 'display:flex;flex-direction:column;align-items:flex-start;gap:0;min-height:20px;width:100%;';
+      if (day.tasks.length === 0) {
+        const e = document.createElement('span'); e.className = 'target-empty'; e.textContent = '-';
+        dotsEl.appendChild(e);
+      } else {
+        day.tasks.forEach(t => {
+          const dot = document.createElement('div'); dot.className = 'tdot';
+          dot.style.background = t.color === 'yellow' ? 'var(--yellow)' : t.color === 'orange' ? 'var(--orange)' : 'var(--turquoise)';
+          dot.title = t.text; dotsEl.appendChild(dot);
+        });
+      }
+      dayEl.appendChild(dotsEl);
+      if (day.min > 0) {
+        const timeEl = document.createElement('div'); timeEl.className = 'target-time';
+        timeEl.textContent = formatMinutes(day.min); dayEl.appendChild(timeEl);
+      }
+      grid.appendChild(dayEl);
+    });
+  } else if (progressWrap) {
+    progressWrap.style.display = 'none';
+  }
+
+  if (store.nextSections.length === 0) {
+    main.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:2rem 0;">Aucune tâche planifiée pour la semaine prochaine.</div>';
+  }
+
+  store.nextSections.forEach((section, si) => {
+    const secEl = document.createElement('div');
+    secEl.className = 'section';
+    const secHeader = document.createElement('div');
+    secHeader.className = 'section-header';
+    const secLabel = document.createElement('div');
+    secLabel.className = 'section-label';
+    // Calculate total time for this section
+    let secTotalMin = 0, secDoneMin = 0;
+    section.groups.forEach(g => g.tasks.forEach(t => {
+      const m = MIN_MAP[t.color] || 15;
+      secTotalMin += m;
+      if (t.done) secDoneMin += m;
+    }));
+    const secTimeLeft = secTotalMin - secDoneMin;
+    secLabel.textContent = section.section;
+    if (secTotalMin > 0) {
+      const timeSpan = document.createElement('span');
+      timeSpan.style.cssText = 'font-size:10px;font-weight:400;color:var(--muted);margin-left:8px;text-transform:none;letter-spacing:0;';
+      timeSpan.textContent = secTimeLeft > 0 ? formatMinutes(secTimeLeft) + ' restantes' : '✓ terminé';
+      secLabel.appendChild(timeSpan);
+    }
+    const secDel = document.createElement('button');
+    secDel.className = 'section-delete-btn'; secDel.textContent = '×';
+    secDel.onclick = () => { if (confirm(`Supprimer "${section.section}" ?`)) { store.nextSections.splice(si, 1); renderNextWeek(); scheduleSave(); } };
+    secHeader.appendChild(secLabel); secHeader.appendChild(secDel);
+    secEl.appendChild(secHeader);
+
+    section.groups.forEach((group, gi) => {
+      const groupEl = document.createElement('div');
+      groupEl.className = 'next-week-group';
+      const groupHeader = document.createElement('div');
+      groupHeader.className = 'group-header';
+      const groupTitle = document.createElement('div');
+      groupTitle.className = 'group-title'; groupTitle.textContent = group.title;
+      const badge = document.createElement('span');
+      badge.className = 'next-week-badge'; badge.textContent = 'Semaine pro';
+      const groupDel = document.createElement('button');
+      groupDel.className = 'group-delete-btn'; groupDel.textContent = '×';
+      groupDel.onclick = () => { if (confirm(`Supprimer "${group.title}" ?`)) { store.nextSections[si].groups.splice(gi, 1); renderNextWeek(); scheduleSave(); } };
+      groupHeader.appendChild(groupTitle); groupHeader.appendChild(badge); groupHeader.appendChild(groupDel);
+      groupEl.appendChild(groupHeader);
+
+      group.tasks.forEach((task, ti) => {
+        const row = document.createElement('div');
+        row.className = 'next-task-item';
+        const dot = document.createElement('div');
+        dot.className = 'next-color-dot';
+        dot.style.background = task.color === 'yellow' ? 'var(--yellow)' : task.color === 'orange' ? 'var(--orange)' : 'var(--turquoise)';
+        const text = document.createElement('span');
+        text.className = 'next-task-text'; text.textContent = task.text;
+        const del = document.createElement('button');
+        del.className = 'delete-btn'; del.textContent = '×'; del.style.opacity = '0';
+        del.onclick = () => { store.nextSections[si].groups[ti].tasks.splice(ti, 1); renderNextWeek(); scheduleSave(); };
+        row.addEventListener('mouseenter', () => del.style.opacity = '1');
+        // send-to-this-week button
+        const sendBtn = document.createElement('button');
+        sendBtn.style.cssText = 'opacity:0;background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;padding:2px 5px;border-radius:4px;transition:opacity 0.15s,color 0.15s;white-space:nowrap;flex-shrink:0;';
+        sendBtn.textContent = '← cette sem.';
+        sendBtn.title = 'Envoyer dans la semaine courante';
+        sendBtn.onclick = () => {
+          store.nextSections[si].groups[gi].tasks.splice(ti, 1)[0];
+          const moved = Object.assign({}, task, { done: false });
+          // find or create matching section in current week
+          let cs = store.sections.find(s => s.section === store.nextSections[si].section);
+          if (!cs) { cs = { section: store.nextSections[si].section, groups: [] }; store.sections.push(cs); }
+          let cg = cs.groups.find(g => g.title === store.nextSections[si].groups[gi].title);
+          if (!cg) { cg = { title: store.nextSections[si].groups[gi].title, tasks: [] }; cs.groups.push(cg); }
+          cg.tasks.push(moved);
+          // clean up empty groups/sections in nextSections
+          store.nextSections[si].groups[gi].tasks.splice(ti, 1);
+          store.nextSections = store.nextSections.filter(s => s.groups.some(g => g.tasks.length > 0));
+          renderTodo(); renderNextWeek(); scheduleSave();
+        };
+        row.addEventListener('mouseenter', () => sendBtn.style.opacity = '1');
+        row.addEventListener('mouseleave', () => { del.style.opacity = '0'; sendBtn.style.opacity = '0'; });
+        row.appendChild(dot); row.appendChild(text); row.appendChild(sendBtn); row.appendChild(del);
+        groupEl.appendChild(row);
+      });
+
+      // Add next task
+      const addRow = document.createElement('div');
+      addRow.className = 'add-next-task-row';
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.className = 'add-next-task-input'; inp.placeholder = 'Ajouter une tâche...';
+      let sel = 'orange';
+      const picker = document.createElement('div');
+      picker.className = 'add-color-picker';
+      COLORS.forEach(c => {
+        const dot2 = document.createElement('div');
+        dot2.className = `add-color-dot cd-${c}${c === sel ? ' selected' : ''}`;
+        dot2.onclick = () => { sel = c; picker.querySelectorAll('.add-color-dot').forEach(d => d.classList.remove('selected')); dot2.classList.add('selected'); };
+        picker.appendChild(dot2);
+      });
+      const btn = document.createElement('button');
+      btn.className = 'add-task-btn'; btn.textContent = '+';
+      const doAdd = () => { if (inp.value.trim()) { store.nextSections[si].groups[gi].tasks.push({ text: inp.value.trim(), color: sel, done: false }); inp.value = ''; renderNextWeek(); scheduleSave(); } else inp.focus(); };
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter') doAdd(); });
+      btn.onclick = doAdd;
+      addRow.appendChild(inp); addRow.appendChild(picker); addRow.appendChild(btn);
+      groupEl.appendChild(addRow);
+      secEl.appendChild(groupEl);
+    });
+
+    // Add group for next week
+    const addGroupRow = document.createElement('div');
+    addGroupRow.className = 'add-group-row';
+    const gInp = document.createElement('input');
+    gInp.type = 'text'; gInp.className = 'add-group-input'; gInp.placeholder = '+ Nouveau groupe...';
+    const gBtn = document.createElement('button');
+    gBtn.className = 'add-group-btn'; gBtn.textContent = '+';
+    const doAddGroup = () => { if (gInp.value.trim()) { store.nextSections[si].groups.push({ title: gInp.value.trim(), tasks: [] }); gInp.value = ''; renderNextWeek(); scheduleSave(); } else gInp.focus(); };
+    gInp.addEventListener('keydown', e => { if (e.key === 'Enter') doAddGroup(); });
+    gBtn.onclick = doAddGroup;
+    addGroupRow.appendChild(gInp); addGroupRow.appendChild(gBtn);
+    secEl.appendChild(addGroupRow);
+    main.appendChild(secEl);
+  });
+}
+
+function addNextSection() {
+  const inp = document.getElementById('newNextSectionInput');
+  if (!inp.value.trim()) { inp.focus(); return; }
+  store.nextSections.push({ section: inp.value.trim(), groups: [] });
+  inp.value = ''; renderNextWeek(); scheduleSave();
+}
+document.getElementById('newNextSectionInput').addEventListener('keydown', e => { if (e.key === 'Enter') addNextSection(); });
+
+// ===== KANBAN CRM =====
+function renderKanban() {
+  const board = document.getElementById('kanbanBoard');
+  board.innerHTML = '';
+
+  CRM_COLS.forEach(col => {
+    const colEl = document.createElement('div');
+    colEl.className = `kanban-col ${col.cls}`;
+
+    const accent = document.createElement('div');
+    accent.className = 'kanban-col-accent';
+    colEl.appendChild(accent);
+
+    const header = document.createElement('div');
+    header.className = 'kanban-col-header';
+    const title = document.createElement('div');
+    title.className = 'kanban-col-title'; title.textContent = col.label;
+    const count = document.createElement('div');
+    count.className = 'kanban-col-count'; count.textContent = (store.crm[col.id] || []).length;
+    header.appendChild(title); header.appendChild(count);
+    colEl.appendChild(header);
+
+    const cards = document.createElement('div');
+    cards.className = 'kanban-cards';
+    cards.dataset.col = col.id;
+
+    cards.addEventListener('dragover', e => { e.preventDefault(); cards.classList.add('drag-over'); });
+    cards.addEventListener('dragleave', () => cards.classList.remove('drag-over'));
+    cards.addEventListener('drop', e => {
+      e.preventDefault();
+      cards.classList.remove('drag-over');
+      if (dragCard !== null) {
+        const prospect = store.crm[dragColId].splice(dragCardIdx, 1)[0];
+        store.crm[col.id].push(prospect);
+        dragCard = null; dragColId = null; dragCardIdx = null;
+        renderKanban(); scheduleSave();
+      }
+    });
+
+    (store.crm[col.id] || []).forEach((p, pi) => {
+      const card = document.createElement('div');
+      card.className = 'prospect-card';
+      card.draggable = true;
+
+      card.addEventListener('dragstart', () => {
+        dragCard = p; dragColId = col.id; dragCardIdx = pi;
+        setTimeout(() => card.classList.add('dragging'), 0);
+      });
+      card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+      const name = document.createElement('div');
+      name.className = 'prospect-name'; name.textContent = p.name;
+      card.appendChild(name);
+
+      const meta = document.createElement('div');
+      meta.className = 'prospect-meta';
+      if (p.phone) meta.innerHTML += `📞 ${p.phone}<br>`;
+      if (p.email) meta.innerHTML += `✉ ${p.email}<br>`;
+      if (p.notes) meta.innerHTML += `<span style="font-style:italic">${p.notes}</span>`;
+      if (p.phone || p.email || p.notes) card.appendChild(meta);
+
+      const actions = document.createElement('div');
+      actions.className = 'prospect-actions';
+      const editBtn = document.createElement('button');
+      editBtn.className = 'prospect-action-btn'; editBtn.textContent = '✏';
+      editBtn.onclick = (e) => { e.stopPropagation(); openModal(col.id, pi); };
+      const delBtn = document.createElement('button');
+      delBtn.className = 'prospect-action-btn prospect-action-del'; delBtn.textContent = '×';
+      delBtn.onclick = (e) => { e.stopPropagation(); if (confirm(`Supprimer ${p.name} ?`)) { store.crm[col.id].splice(pi, 1); renderKanban(); scheduleSave(); } };
+      actions.appendChild(editBtn); actions.appendChild(delBtn);
+      card.appendChild(actions);
+      cards.appendChild(card);
+    });
+
+    // Add prospect form
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-prospect-btn'; addBtn.textContent = '+ Ajouter un prospect';
+    addBtn.onclick = () => {
+      addBtn.style.display = 'none';
+      const form = document.createElement('div');
+      form.className = 'prospect-form';
+      const nameInp = document.createElement('input'); nameInp.placeholder = 'Nom / Entreprise *'; nameInp.type = 'text';
+      const phoneInp = document.createElement('input'); phoneInp.placeholder = 'Téléphone'; phoneInp.type = 'tel';
+      const emailInp = document.createElement('input'); emailInp.placeholder = 'Email'; emailInp.type = 'email';
+      const notesInp = document.createElement('textarea'); notesInp.placeholder = 'Notes...';
+      const formActions = document.createElement('div'); formActions.className = 'prospect-form-actions';
+      const saveBtn = document.createElement('button'); saveBtn.className = 'btn-save'; saveBtn.textContent = 'Ajouter';
+      saveBtn.onclick = () => {
+        if (!nameInp.value.trim()) { nameInp.focus(); return; }
+        if (!store.crm[col.id]) store.crm[col.id] = [];
+        store.crm[col.id].push({ name: nameInp.value.trim(), phone: phoneInp.value.trim(), email: emailInp.value.trim(), notes: notesInp.value.trim() });
+        renderKanban(); scheduleSave();
+      };
+      const cancelBtn = document.createElement('button'); cancelBtn.className = 'btn-cancel'; cancelBtn.textContent = 'Annuler';
+      cancelBtn.onclick = () => renderKanban();
+      formActions.appendChild(cancelBtn); formActions.appendChild(saveBtn);
+      form.appendChild(nameInp); form.appendChild(phoneInp); form.appendChild(emailInp); form.appendChild(notesInp); form.appendChild(formActions);
+      cards.appendChild(form);
+      nameInp.focus();
+    };
+
+    colEl.appendChild(cards);
+    colEl.appendChild(addBtn);
+    board.appendChild(colEl);
+  });
+}
+
+// ===== MODAL =====
+function openModal(colId, idx) {
+  const p = store.crm[colId][idx];
+  editingProspect = { colId, idx };
+  document.getElementById('modalName').value = p.name || '';
+  document.getElementById('modalPhone').value = p.phone || '';
+  document.getElementById('modalEmail').value = p.email || '';
+  document.getElementById('modalNotes').value = p.notes || '';
+  document.getElementById('modalOverlay').classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+  editingProspect = null;
+}
+
+function saveModal() {
+  if (!editingProspect) return;
+  const { colId, idx } = editingProspect;
+  store.crm[colId][idx] = {
+    name: document.getElementById('modalName').value.trim(),
+    phone: document.getElementById('modalPhone').value.trim(),
+    email: document.getElementById('modalEmail').value.trim(),
+    notes: document.getElementById('modalNotes').value.trim()
+  };
+  closeModal(); renderKanban(); scheduleSave();
+}
+
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+
+// ===== KPI =====
+function renderKpi() {
+  // Sync week data
+  updateWeekKpi();
+
+  // Week time KPI
+  const totalSec = getTotalElapsedSec();
+  const totalDone = getTotalDoneCount();
+  const weekTimeEl = document.getElementById('kpiWeekTime');
+  const weekBarEl = document.getElementById('kpiWeekBar');
+  if (weekTimeEl) {
+    weekTimeEl.textContent = totalSec > 0 ? fmtSeconds(totalSec) + ' — ' + totalDone + ' tâche' + (totalDone > 1 ? 's' : '') + ' faite' + (totalDone > 1 ? 's' : '') : '0 min';
+    // Bar: target 35h/week = 126000s
+    const pctWeek = Math.min(Math.round(totalSec / 126000 * 100), 100);
+    if (weekBarEl) weekBarEl.style.width = pctWeek + '%';
+  }
+
+  // History
+  const histEl = document.getElementById('kpiHistory');
+  if (histEl) {
+    const history = (store.kpi && store.kpi.history) || [];
+    if (history.length === 0) {
+      histEl.innerHTML = `<div style="font-size:13px;color:var(--muted);text-align:center;padding:1rem 0;">L'historique apparaîtra à partir de la semaine prochaine.</div>`;
+    } else {
+      histEl.innerHTML = '';
+      history.forEach(w => {
+        const row = document.createElement('div');
+        row.className = 'kpi-history-week';
+        const lbl = document.createElement('div'); lbl.className = 'kpi-history-label'; lbl.textContent = w.label || w.week;
+        const stats = document.createElement('div'); stats.className = 'kpi-history-stats';
+        stats.textContent = fmtSeconds(w.seconds || 0) + ' · ' + (w.tasks || 0) + ' tâche' + ((w.tasks||0) > 1 ? 's' : '');
+        row.appendChild(lbl); row.appendChild(stats);
+        histEl.appendChild(row);
+      });
+    }
+  }
+
+  // Prospects: count cards in "contact" column added this week
+  const prospectsCount = ['lead','contact','discussion','offre','relance','rdv','client','perdu'].reduce((acc, col) => acc + (store.crm[col] || []).length, 0);
+  const prospectsPct = Math.min(Math.round(prospectsCount / 3 * 100), 100);
+  document.getElementById('kpiProspectsVal').textContent = prospectsCount;
+  document.getElementById('kpiProspectsBar').style.width = prospectsPct + '%';
+  document.getElementById('kpiProspectsBar').style.background = prospectsPct >= 100 ? 'var(--green, #4A7C59)' : 'var(--turquoise)';
+
+  // Posts
+  const postsCount = store.kpi ? (store.kpi.posts || 0) : 0;
+  const postsPct = Math.min(Math.round(postsCount / 4 * 100), 100);
+  document.getElementById('kpiPostsVal').textContent = postsCount;
+  document.getElementById('kpiPostsBar').style.width = postsPct + '%';
+  document.getElementById('kpiPostsBar').style.background = postsPct >= 100 ? 'var(--green, #4A7C59)' : 'var(--orange)';
+
+  // Client objectives
+  const container = document.getElementById('kpiClients');
+  container.innerHTML = '';
+  const clients = (store.kpi && store.kpi.clients) ? store.kpi.clients : [];
+
+  if (clients.length === 0) {
+    container.innerHTML = '<div style="font-size:13px;color:var(--muted);text-align:center;padding:1.5rem 0;">Aucun client ajouté — utilise le champ ci-dessous.</div>';
+  }
+
+  clients.forEach((client, ci) => {
+    const card = document.createElement('div');
+    card.className = 'kpi-client-card';
+
+    const header = document.createElement('div');
+    header.className = 'kpi-client-header';
+    const name = document.createElement('div');
+    name.className = 'kpi-client-name';
+    name.textContent = client.name;
+    const del = document.createElement('button');
+    del.className = 'kpi-client-del'; del.textContent = '×';
+    del.onclick = () => { if (confirm(`Supprimer ${client.name} ?`)) { store.kpi.clients.splice(ci, 1); renderKpi(); scheduleSave(); } };
+    header.appendChild(name); header.appendChild(del);
+    card.appendChild(header);
+
+    (client.objectives || []).forEach((obj, oi) => {
+      const objRow = document.createElement('div');
+      objRow.className = 'kpi-objective';
+
+      const label = document.createElement('div');
+      label.className = 'kpi-objective-label';
+      label.textContent = obj.label;
+
+      const barWrap = document.createElement('div');
+      barWrap.style.cssText = 'flex:1;max-width:140px;';
+      const barBg = document.createElement('div');
+      barBg.className = 'kpi-bar-bg';
+      barBg.style.marginBottom = '0';
+      const bar = document.createElement('div');
+      bar.className = 'kpi-bar';
+      bar.style.background = 'var(--accent)';
+      const pct = obj.target > 0 ? Math.min(Math.round((obj.current || 0) / obj.target * 100), 100) : 0;
+      bar.style.width = pct + '%';
+      barBg.appendChild(bar);
+      barWrap.appendChild(barBg);
+
+      const controls = document.createElement('div');
+      controls.className = 'kpi-objective-controls';
+
+      const minusBtn = document.createElement('button');
+      minusBtn.className = 'kpi-count-btn'; minusBtn.textContent = '−';
+      minusBtn.onclick = () => { store.kpi.clients[ci].objectives[oi].current = Math.max(0, (obj.current || 0) - 1); renderKpi(); scheduleSave(); };
+
+      const valSpan = document.createElement('span');
+      valSpan.style.cssText = 'font-size:12px;font-weight:500;color:var(--accent);min-width:40px;text-align:center;';
+      valSpan.textContent = `${obj.current || 0} / ${obj.target}`;
+
+      const plusBtn = document.createElement('button');
+      plusBtn.className = 'kpi-count-btn'; plusBtn.textContent = '+';
+      plusBtn.onclick = () => { store.kpi.clients[ci].objectives[oi].current = (obj.current || 0) + 1; renderKpi(); scheduleSave(); };
+
+      const targetInp = document.createElement('input');
+      targetInp.type = 'number'; targetInp.className = 'kpi-obj-input';
+      targetInp.value = obj.target; targetInp.min = 1; targetInp.title = 'Objectif';
+      targetInp.onchange = () => { store.kpi.clients[ci].objectives[oi].target = parseInt(targetInp.value) || 1; renderKpi(); scheduleSave(); };
+
+      const objDel = document.createElement('button');
+      objDel.style.cssText = 'background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:2px 4px;opacity:0;transition:opacity 0.15s;';
+      objDel.textContent = '×';
+      objDel.onclick = () => { store.kpi.clients[ci].objectives.splice(oi, 1); renderKpi(); scheduleSave(); };
+      objRow.addEventListener('mouseenter', () => objDel.style.opacity = '1');
+      objRow.addEventListener('mouseleave', () => objDel.style.opacity = '0');
+
+      controls.appendChild(minusBtn); controls.appendChild(valSpan); controls.appendChild(plusBtn); controls.appendChild(targetInp); controls.appendChild(objDel);
+      objRow.appendChild(label); objRow.appendChild(barWrap); objRow.appendChild(controls);
+      card.appendChild(objRow);
+    });
+
+    // Add objective
+    const addObjRow = document.createElement('div');
+    addObjRow.className = 'kpi-add-objective-row';
+    const objInp = document.createElement('input');
+    objInp.type = 'text'; objInp.className = 'kpi-add-objective-input'; objInp.placeholder = 'Nouvel objectif... (ex: posts publiés)';
+    const objBtn = document.createElement('button');
+    objBtn.className = 'add-task-btn'; objBtn.textContent = '+';
+    const doAddObj = () => {
+      if (!objInp.value.trim()) { objInp.focus(); return; }
+      store.kpi.clients[ci].objectives.push({ label: objInp.value.trim(), target: 4, current: 0 });
+      objInp.value = ''; renderKpi(); scheduleSave();
+    };
+    objInp.addEventListener('keydown', e => { if (e.key === 'Enter') doAddObj(); });
+    objBtn.onclick = doAddObj;
+    addObjRow.appendChild(objInp); addObjRow.appendChild(objBtn);
+    card.appendChild(addObjRow);
+    container.appendChild(card);
+  });
+}
+
+// Get ISO week string like "2026-W13"
+function getWeekKey(date) {
+  const d = date ? new Date(date) : new Date();
+  const jan4 = new Date(d.getFullYear(), 0, 4);
+  const weekNum = Math.ceil(((d - jan4) / 86400000 + jan4.getDay() + 1) / 7);
+  return `${d.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+}
+
+function getWeekLabel(key) {
+  // key = "2026-W13" -> "Semaine 13 — 2026"
+  const [year, w] = key.split('-W');
+  // Get Monday of that week
+  const jan4 = new Date(parseInt(year), 0, 4);
+  const monday = new Date(jan4.getTime() + (parseInt(w) - Math.ceil((jan4.getDay()+1)/7)) * 7 * 86400000);
+  monday.setDate(monday.getDate() - monday.getDay() + 1);
+  const friday = new Date(monday); friday.setDate(friday.getDate() + 4);
+  const fmt = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+  return `${fmt(monday)} – ${fmt(friday)} ${year}`;
+}
+
+function getTotalElapsedSec() {
+  let total = 0;
+  store.sections.forEach(s => s.groups.forEach(g => g.tasks.forEach(t => { total += t.elapsed || 0; })));
+  return total;
+}
+
+function getTotalDoneCount() {
+  let count = 0;
+  store.sections.forEach(s => s.groups.forEach(g => g.tasks.forEach(t => { if (t.done) count++; })));
+  return count;
+}
+
+function archiveWeekIfNeeded() {
+  const currentWeek = getWeekKey();
+  const lastWeek = store.kpi.lastWeek || '';
+  if (lastWeek && lastWeek !== currentWeek) {
+    // New week — archive last week's data
+    if (!store.kpi.history) store.kpi.history = [];
+    store.kpi.history.unshift({
+      week: lastWeek,
+      label: getWeekLabel(lastWeek),
+      seconds: store.kpi.weekSeconds || 0,
+      tasks: store.kpi.weekTasks || 0
+    });
+    // Keep only last 8 weeks
+    store.kpi.history = store.kpi.history.slice(0, 8);
+    // Reset current week counters
+    store.kpi.weekSeconds = 0;
+    store.kpi.weekTasks = 0;
+    store.kpi.lastWeek = currentWeek;
+    scheduleSave();
+  } else if (!lastWeek) {
+    store.kpi.lastWeek = currentWeek;
+  }
+}
+
+function updateWeekKpi() {
+  archiveWeekIfNeeded();
+  const totalSec = getTotalElapsedSec();
+  const totalDone = getTotalDoneCount();
+  // Sync to store
+  store.kpi.weekSeconds = totalSec;
+  store.kpi.weekTasks = totalDone;
+}
+
+function fmtSeconds(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+  if (h === 0) return `${m} min`;
+  return m > 0 ? `${h}h${String(m).padStart(2,'0')}` : `${h}h`;
+}
+
+function changePostCount(delta) {
+  if (!store.kpi) store.kpi = { posts: 0, clients: [] };
+  store.kpi.posts = Math.max(0, (store.kpi.posts || 0) + delta);
+  renderKpi(); scheduleSave();
+}
+
+function addKpiClient() {
+  const inp = document.getElementById('kpiNewClient');
+  if (!inp.value.trim()) { inp.focus(); return; }
+  if (!store.kpi) store.kpi = { posts: 0, clients: [] };
+  if (!store.kpi.clients) store.kpi.clients = [];
+  store.kpi.clients.push({ name: inp.value.trim(), objectives: [] });
+  inp.value = ''; renderKpi(); scheduleSave();
+}
+document.getElementById('kpiNewClient').addEventListener('keydown', e => { if (e.key === 'Enter') addKpiClient(); });
+
+function renderCMClients() {
+  const list = document.getElementById('cmClientList');
+  if (!list) return;
+  list.innerHTML = '';
+  const clients = store.kpi.cmClients || [];
+  clients.forEach((c, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;';
+    const name = document.createElement('span');
+    name.style.cssText = 'flex:1;font-size:12px;color:var(--text);';
+    name.textContent = c.name;
+    const amt = document.createElement('span');
+    amt.style.cssText = 'font-size:12px;font-weight:500;color:var(--muted);';
+    amt.textContent = c.amount + '€';
+    const del = document.createElement('button');
+    del.style.cssText = 'background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;padding:0 3px;opacity:0.4;';
+    del.textContent = '×';
+    del.onmouseenter = () => del.style.opacity = '1';
+    del.onmouseleave = () => del.style.opacity = '0.4';
+    del.onclick = () => { store.kpi.cmClients.splice(i, 1); renderCMClients(); updateSalary(); scheduleSave(); };
+    row.appendChild(name); row.appendChild(amt); row.appendChild(del);
+    list.appendChild(row);
+  });
+  const total = clients.reduce((a, c) => a + (c.amount || 0), 0);
+  const totalEl = document.getElementById('salCMTotal');
+  if (totalEl) totalEl.textContent = total + '€';
+}
+
+function addCMClient() {
+  const nameInp = document.getElementById('newClientName');
+  const amtInp = document.getElementById('newClientAmount');
+  if (!nameInp?.value.trim() || !amtInp?.value) { nameInp?.focus(); return; }
+  if (!store.kpi.cmClients) store.kpi.cmClients = [];
+  store.kpi.cmClients.push({ name: nameInp.value.trim(), amount: parseFloat(amtInp.value) || 0 });
+  nameInp.value = ''; amtInp.value = '';
+  renderCMClients(); updateSalary(); scheduleSave();
+}
+
+function updateSalary() {
+  const cm = parseFloat(document.getElementById('salCM')?.value) || 850;
+  const dame = parseFloat(document.getElementById('salDame')?.value) || 300;
+  const subside = parseFloat(document.getElementById('salSubside')?.value) || 375;
+  const frais = parseFloat(document.getElementById('salFrais')?.value) || 222.74;
+  const benefit = Math.max(0, cm - frais);
+  const netCM = Math.round(benefit * 0.725); // 27.5% cotisations+impôts sur bénéfice CM uniquement
+  const total = netCM + dame + subside; // dame et subside déjà nets, pas retouchés
+
+  const fmt = v => v.toFixed(0) + '€';
+
+  const el = id => document.getElementById(id);
+  if (!el('salBenefit')) return;
+
+  el('salBenefit').textContent = fmt(benefit);
+  el('salNetCM').textContent = fmt(netCM);
+  el('salTotal').textContent = fmt(total);
+  if (el('salDameDisplay')) el('salDameDisplay').textContent = fmt(dame);
+  if (el('salSubsideDisplay')) el('salSubsideDisplay').textContent = fmt(subside);
+
+  // Seuils
+  const seuils = [
+    { id: 'seuil900', val: 900 },
+    { id: 'seuil1100', val: 1100 },
+    { id: 'seuil2000', val: 2000 }
+  ];
+  seuils.forEach(s => {
+    const box = el(s.id);
+    if (!box) return;
+    if (total >= s.val) {
+      box.style.background = 'var(--turquoise-bg)';
+      box.style.borderColor = 'var(--turquoise)';
+      box.style.color = 'var(--turquoise)';
+      box.querySelector('div:last-child').textContent = s.val + '€ ✓';
+    } else {
+      box.style.background = 'var(--bg)';
+      box.style.borderColor = 'var(--border)';
+      box.style.color = 'var(--muted)';
+      box.querySelector('div:last-child').textContent = s.val + '€';
+    }
+  });
+
+  // Perso (après charges fixes)
+  const perso = total - 800;
+  const persoEl = el('salPerso');
+  if (persoEl) {
+    persoEl.textContent = fmt(perso);
+    persoEl.style.color = perso >= 300 ? 'var(--accent)' : perso >= 100 ? 'var(--orange)' : '#C0392B';
+  }
+
+  // Formation : ce qui reste après formation ET charges perso
+  const afterFormation = total - 975 - 800;
+  const formEl = el('salFormation');
+  if (formEl) {
+    if (afterFormation >= 400) {
+      formEl.textContent = fmt(afterFormation) + ' restants après formation + charges — Confortable ✓';
+      formEl.style.background = 'var(--turquoise-bg)';
+      formEl.style.color = 'var(--turquoise)';
+    } else if (afterFormation >= 150) {
+      formEl.textContent = fmt(afterFormation) + ' restants — Très juste, à surveiller';
+      formEl.style.background = 'var(--yellow-bg)';
+      formEl.style.color = '#7A6000';
+    } else if (afterFormation > 0) {
+      formEl.textContent = fmt(afterFormation) + ' restants — Trop risqué ⚠';
+      formEl.style.background = '#FEF0EE';
+      formEl.style.color = '#9B2C2C';
+    } else {
+      // Estimate how many clients needed (avg ~125€ net per client)
+      const missing = Math.abs(afterFormation);
+      const clientsNeeded = Math.ceil(missing / 125);
+      formEl.textContent = 'Manque ' + fmt(missing) + ' — il te faut encore ' + clientsNeeded + ' client' + (clientsNeeded > 1 ? 's' : '') + ' pour envisager la formation';
+      formEl.style.background = '#FEF0EE';
+      formEl.style.color = '#9B2C2C';
+    }
+  }
+}
+
+document.getElementById('newClientAmount')?.addEventListener('keydown', e => { if (e.key === 'Enter') addCMClient(); });
+document.getElementById('newClientName')?.addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('newClientAmount')?.focus(); });
+loadData();
+</script>
+</body>
+</html>
